@@ -34,7 +34,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         className="btn-logout" 
         onClick={() => {
             localStorage.clear(); 
-            window.location.href = "/"; 
+            navigate('/login');
         }}
       >
         <i className="ri-logout-box-r-line"></i> Keluar

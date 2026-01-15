@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../services/api';
+import { getPermissions, createPermission } from '../services/api';
 
 const PermissionModal = ({ isOpen, onClose, onRefresh }) => {
   const [formData, setFormData] = useState({
@@ -9,29 +9,30 @@ const PermissionModal = ({ isOpen, onClose, onRefresh }) => {
     start_date: '',
     end_date: ''
   });
-
-  if (!isOpen) return null;
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     
     try {
-      
-      const response = await api.post('/permissions', formData);
+      const response = await createPermission(formData);
 
       if (response.data.success) {
-        alert("Berhasil: " + response.data.message);
+        alert("✅ Berhasil: " + response.data.message);
         onClose();
         onRefresh();
-        
         setFormData({ type: 'sakit', title: '', reason: '', start_date: '', end_date: '' });
       }
     } catch (error) {
-      
       const errorMsg = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || "Terjadi kesalahan";
-      alert("Gagal: " + errorMsg);
+      alert("❌ Gagal: " + errorMsg);
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay open">
@@ -90,8 +91,23 @@ const PermissionModal = ({ isOpen, onClose, onRefresh }) => {
             ></textarea>
           </div>
           
-          <button type="submit" className="btn-scan" style={{ background: '#4318FF', width: '100%', maxWidth: 'none' }}>
-            Kirim Pengajuan
+          <button 
+            type="submit" 
+            className="btn-scan" 
+            style={{ background: '#4318FF', width: '100%', maxWidth: 'none' }}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <i className="ri-loader-4-line rotating"></i>
+                Mengirim...
+              </>
+            ) : (
+              <>
+                <i className="ri-send-plane-fill"></i>
+                Kirim Pengajuan
+              </>
+            )}
           </button>
         </form>
       </div>
@@ -102,21 +118,58 @@ const PermissionModal = ({ isOpen, onClose, onRefresh }) => {
 const Perizinan = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [permissions, setPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchPermissions = async () => {
     try {
-      const response = await api.get('/permissions');
+      setLoading(true);
+      const response = await getPermissions();
       if (response.data.success) {
         setPermissions(response.data.data);
       }
+      setError(null);
     } catch (error) {
       console.error("Gagal load data", error);
+      setError(error.response?.data?.message || 'Gagal memuat data perizinan');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchPermissions();
   }, []);
+
+  // Helper function untuk format tanggal
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  // Helper function untuk mendapatkan warna status
+  const getStatusColor = (status) => {
+    const colors = {
+      'sent': '#FEF3C7 #B45309',
+      'review_mentor': '#DBEAFE #1E40AF',
+      'review_kadiv': '#E0E7FF #4338CA',
+      'approved': '#DCFCE7 #15803D',
+      'rejected': '#FEE2E2 #991B1B'
+    };
+    return colors[status] || '#F3F4F6 #6B7280';
+  };
+
+  // Helper function untuk label status
+  const getStatusLabel = (status) => {
+    const labels = {
+      'sent': 'Terkirim',
+      'review_mentor': 'Review Mentor',
+      'review_kadiv': 'Review Kadiv',
+      'approved': 'Disetujui',
+      'rejected': 'Ditolak'
+    };
+    return labels[status] || status;
+  };
 
   return (
     <div className="section-view active">
@@ -131,34 +184,90 @@ const Perizinan = () => {
       </div>
 
       <div className="card" style={{ padding: '20px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '2px solid #f4f7fe' }}>
-              <th style={{ padding: '12px' }}>Judul</th>
-              <th style={{ padding: '12px' }}>Jenis</th>
-              <th style={{ padding: '12px' }}>Durasi</th>
-              <th style={{ padding: '12px' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {permissions.length > 0 ? (
-              permissions.map((item) => (
-                <tr key={item.id} style={{ borderBottom: '1px solid #f4f7fe' }}>
-                  <td style={{ padding: '12px' }}>{item.title}</td>
-                  <td style={{ padding: '12px', textTransform: 'capitalize' }}>{item.type}</td>
-                  <td style={{ padding: '12px' }}>{item.duration_days} Hari</td>
-                  <td style={{ padding: '12px' }}>
-                    <span className={`status-badge ${item.status}`} style={{ textTransform: 'uppercase' }}>
-                      {item.status}
-                    </span>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <i className="ri-loader-4-line rotating" style={{ fontSize: '32px', color: '#FF6B00' }}></i>
+            <p style={{ marginTop: '10px', color: '#6B7280' }}>Memuat data...</p>
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <i className="ri-error-warning-line" style={{ fontSize: '48px', color: '#EF4444' }}></i>
+            <p style={{ marginTop: '10px', color: '#EF4444', fontWeight: 600 }}>{error}</p>
+            <button 
+              onClick={fetchPermissions}
+              className="btn-scan"
+              style={{ marginTop: '15px', background: '#EF4444', width: 'auto' }}
+            >
+              <i className="ri-refresh-line"></i>
+              Coba Lagi
+            </button>
+          </div>
+        ) : (
+          <table className="clean-table">
+            <thead>
+              <tr>
+                <th>Judul</th>
+                <th>Jenis</th>
+                <th>Periode</th>
+                <th>Durasi</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {permissions.length > 0 ? (
+                permissions.map((item) => {
+                  const [bgColor, textColor] = getStatusColor(item.status).split(' ');
+                  return (
+                    <tr key={item.id}>
+                      <td style={{ fontWeight: 600 }}>{item.title}</td>
+                      <td>
+                        <span style={{ 
+                          textTransform: 'capitalize',
+                          padding: '4px 10px',
+                          background: item.type === 'sakit' ? '#FEF2F2' : '#EFF6FF',
+                          color: item.type === 'sakit' ? '#DC2626' : '#2563EB',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: 600
+                        }}>
+                          {item.type}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '13px', color: '#6B7280' }}>
+                        {formatDate(item.start_date)} - {formatDate(item.end_date)}
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: 600, color: '#374151' }}>
+                          {item.duration_days} Hari
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{
+                          padding: '6px 14px',
+                          background: bgColor,
+                          color: textColor,
+                          borderRadius: '20px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          letterSpacing: '0.5px'
+                        }}>
+                          {getStatusLabel(item.status)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="5" style={{ padding: '40px', textAlign: 'center' }}>
+                    <i className="ri-file-list-3-line" style={{ fontSize: '48px', color: '#D1D5DB', display: 'block', marginBottom: '10px' }}></i>
+                    <p style={{ color: '#9CA3AF', fontWeight: 500 }}>Belum ada data pengajuan perizinan</p>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>Belum ada data pengajuan.</td></tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <PermissionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onRefresh={fetchPermissions} />

@@ -1,5 +1,6 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
+import { getTodayPresence, checkIn, checkOut } from '../services/api';
 
 const Presensi = () => {
   const webcamRef = useRef(null);
@@ -8,27 +9,87 @@ const Presensi = () => {
   const [type, setType] = useState(""); // 'in' atau 'out'
   const [absenIn, setAbsenIn] = useState("-- : --");
   const [absenOut, setAbsenOut] = useState("-- : --");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [todayPresence, setTodayPresence] = useState(null);
+
+  // Fetch today's presence on mount
+  useEffect(() => {
+    fetchTodayPresence();
+  }, []);
+
+  const fetchTodayPresence = async () => {
+    try {
+      setLoading(true);
+      const response = await getTodayPresence();
+      if (response.data.success && response.data.data) {
+        const presence = response.data.data;
+        setTodayPresence(presence);
+        
+        // Set check-in time if exists
+        if (presence.check_in) {
+          const checkInTime = new Date(presence.check_in);
+          setAbsenIn(checkInTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+        }
+        
+        // Set check-out time if exists
+        if (presence.check_out) {
+          const checkOutTime = new Date(presence.check_out);
+          setAbsenOut(checkOutTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching today presence:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openCam = (mode) => {
     setType(mode);
     setIsCameraOpen(true);
   };
 
-  const capture = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    const time = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    if (type === "in") {
-      setAbsenIn(time);
-    } else {
-      setAbsenOut(time);
+  const capture = useCallback(async () => {
+    try {
+      setSubmitting(true);
+      const imageSrc = webcamRef.current.getScreenshot();
+      
+      if (type === "in") {
+        // Convert base64 to blob
+        const blob = await fetch(imageSrc).then(r => r.blob());
+        const formData = new FormData();
+        formData.append('image', blob, 'checkin.jpg');
+        formData.append('location', 'Kantor Pusat Jakarta');
+        
+        const response = await checkIn(formData);
+        
+        if (response.data.success) {
+          const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+          setAbsenIn(time);
+          setIsCameraOpen(false);
+          alert(`✅ ${response.data.message} jam ${time}`);
+          await fetchTodayPresence();
+        }
+      } else {
+        const response = await checkOut();
+        
+        if (response.data.success) {
+          const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+          setAbsenOut(time);
+          setIsCameraOpen(false);
+          alert(`✅ ${response.data.message} jam ${time}`);
+          await fetchTodayPresence();
+        }
+      }
+    } catch (error) {
+      console.error('Presence error:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan presensi';
+      alert(`❌ ${errorMsg}`);
+    } finally {
+      setSubmitting(false);
     }
-
-    setIsCameraOpen(false);
-    alert(`Absen ${type === "in" ? "Masuk" : "Pulang"} Berhasil jam ${time}`);
   }, [webcamRef, type]);
 
   return (
@@ -38,47 +99,77 @@ const Presensi = () => {
         Jangan lupa scan wajah saat masuk dan pulang.
       </p>
 
-      <div className="attendance-grid">
-        {/* ABSEN MASUK */}
-        <div className="absent-card">
-          <div className="ac-icon">
-            <i className="ri-sun-line"></i>
-          </div>
-          <div className="ac-title">Absen Masuk</div>
-          <div className="ac-clock">{absenIn}</div>
-          <div className="ac-loc">Lokasi: Kantor Pusat</div>
-          <button
-            className="btn-scan"
-            onClick={() => openCam("in")}
-            disabled={absenIn !== "-- : --"}
-          >
-            {absenIn === "-- : --" ? "Scan Wajah" : "Sudah Absen"}
-          </button>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px' }}>
+          <i className="ri-loader-4-line rotating" style={{ fontSize: '48px', color: '#FF6B00' }}></i>
+          <p style={{ marginTop: '15px', color: '#6B7280' }}>Memuat data presensi...</p>
         </div>
+      ) : (
+        <div className="attendance-grid">
+          {/* ABSEN MASUK */}
+          <div className="absent-card">
+            <div className="ac-icon">
+              <i className="ri-sun-line"></i>
+            </div>
+            <div className="ac-title">Absen Masuk</div>
+            <div className="ac-clock">{absenIn}</div>
+            <div className="ac-loc">Lokasi: Kantor Pusat Jakarta</div>
+            <button
+              className="btn-scan"
+              onClick={() => openCam("in")}
+              disabled={absenIn !== "-- : --"}
+            >
+              {absenIn === "-- : --" ? (
+                <>
+                  <i className="ri-camera-line"></i>
+                  Scan Wajah
+                </>
+              ) : (
+                <>
+                  <i className="ri-checkbox-circle-line"></i>
+                  Sudah Absen
+                </>
+              )}
+            </button>
+          </div>
 
-        {/* ABSEN PULANG */}
-        <div
-          className="absent-card"
-          style={{ opacity: absenIn === "-- : --" ? 0.6 : 1 }}
-        >
+          {/* ABSEN PULANG */}
           <div
-            className="ac-icon"
-            style={{ background: "#F3F4F6", color: "#9CA3AF" }}
+            className="absent-card"
+            style={{ opacity: absenIn === "-- : --" ? 0.6 : 1 }}
           >
-            <i className="ri-moon-line"></i>
+            <div
+              className="ac-icon"
+              style={{ 
+                background: absenIn !== "-- : --" ? '#FFF7ED' : '#F3F4F6', 
+                color: absenIn !== "-- : --" ? '#FF6B00' : '#9CA3AF' 
+              }}
+            >
+              <i className="ri-moon-line"></i>
+            </div>
+            <div className="ac-title">Absen Pulang</div>
+            <div className="ac-clock">{absenOut}</div>
+            <div className="ac-loc">Lokasi: Kantor Pusat Jakarta</div>
+            <button
+              className="btn-scan"
+              onClick={() => openCam("out")}
+              disabled={absenIn === "-- : --" || absenOut !== "-- : --"}
+            >
+              {absenOut === "-- : --" ? (
+                <>
+                  <i className="ri-camera-line"></i>
+                  Scan Wajah
+                </>
+              ) : (
+                <>
+                  <i className="ri-checkbox-circle-line"></i>
+                  Sudah Absen
+                </>
+              )}
+            </button>
           </div>
-          <div className="ac-title">Absen Pulang</div>
-          <div className="ac-clock">{absenOut}</div>
-          <div className="ac-loc">Lokasi: Kantor Pusat</div>
-          <button
-            className="btn-scan"
-            onClick={() => openCam("out")}
-            disabled={absenIn === "-- : --" || absenOut !== "-- : --"}
-          >
-            {absenOut === "-- : --" ? "Scan Wajah" : "Sudah Absen"}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* MODAL KAMERA */}
       {isCameraOpen && (
@@ -107,8 +198,19 @@ const Presensi = () => {
                 className="btn-scan"
                 style={{ background: "var(--primary)", width: "auto" }}
                 onClick={capture}
+                disabled={submitting}
               >
-                Ambil Foto
+                {submitting ? (
+                  <>
+                    <i className="ri-loader-4-line rotating"></i>
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-camera-fill"></i>
+                    Ambil Foto
+                  </>
+                )}
               </button>
               <button
                 className="btn-scan"
@@ -118,6 +220,7 @@ const Presensi = () => {
                   width: "auto",
                 }}
                 onClick={() => setIsCameraOpen(false)}
+                disabled={submitting}
               >
                 Batal
               </button>
