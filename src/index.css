@@ -558,3 +558,93 @@ header {
 .rotating {
     animation: rotating 1s linear infinite;
 }
+
+/* ===================================
+    REGISTER PAGE STYLES (MATCHING THEME)
+   =================================== */
+
+.register-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FF6B00 0%, #FF881F 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 40px 20px;
+}
+
+.register-container {
+    width: 100%;
+    max-width: 500px; /* Sedikit lebih lebar karena formnya banyak */
+    position: relative;
+    z-index: 10;
+}
+
+.register-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.register-header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.register-header p {
+    color: var(--text-grey);
+    font-size: 14px;
+}
+
+/* Form Layout for Register */
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.register-footer {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #E5E7EB;
+    font-size: 14px;
+    color: var(--text-grey);
+}
+
+.register-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.register-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Tambahkan atau pastikan ini ada di index.css */
+.form-select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    font-size: 14px;
+    background: #F9FAFB;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+.form-select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+}

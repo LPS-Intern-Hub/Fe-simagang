@@ -6,6 +6,7 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
 import Login from "./pages/Login";
+import Register from "./pages/Register"; // Import page Register yang baru dibuat
 import Dashboard from "./pages/Dashboard";
 import Perizinan from "./pages/Perizinan";
 import Presensi from "./pages/Presensi";
@@ -32,9 +33,9 @@ const MainLayout = ({ children, activeTab, setActiveTab }) => {
       <main style={{ flex: 1, backgroundColor: "#F4F7FE" }}>
         <Header
           title="Simagang Dashboard"
-          date={new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           userName={user.full_name || "User"}
-          userRole={user.position || "Intern"}
+          userRole={user.role || "magang"}
         />
         <div className="container" style={{ padding: '20px' }}>
           {children}
@@ -50,8 +51,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Route - Login */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} /> {/* Register is now public */}
 
         {/* Protected Routes */}
         <Route

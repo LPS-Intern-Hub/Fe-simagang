@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/api';
 
 const Login = () => {
@@ -16,7 +16,6 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Clear error when user types
     if (error) setError('');
   };
 
@@ -27,24 +26,20 @@ const Login = () => {
 
     try {
       const response = await login(formData);
-      
+
       if (response.data.success) {
-        // Save token and user data to localStorage
         localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        
-        // Redirect to dashboard
         navigate('/dashboard');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login gagal. Silakan coba lagi.');
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Quick login buttons for testing
   const quickLogin = (email) => {
     setFormData({
       email: email,
@@ -56,17 +51,16 @@ const Login = () => {
     <div className="login-page">
       <div className="login-container">
         <div className="login-card">
-          {/* Logo & Title */}
+          {/* Logo Petir Balik Lagi */}
           <div className="login-header">
             <div className="brand-login">
               <i className="ri-flashlight-fill"></i>
               <span>SIMAGANG</span>
             </div>
-            <h1>Selamat Datang!</h1>
-            <p>Silakan login untuk melanjutkan</p>
+            <h1>Welcome Back!</h1>
+            <p>Please login to your account</p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="alert-error">
               <i className="ri-error-warning-line"></i>
@@ -74,12 +68,11 @@ const Login = () => {
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="email">
                 <i className="ri-mail-line"></i>
-                Email
+                Email Address
               </label>
               <input
                 type="email"
@@ -87,7 +80,7 @@ const Login = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="contoh@email.com"
+                placeholder="name@example.com"
                 required
                 disabled={loading}
               />
@@ -104,7 +97,7 @@ const Login = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Masukkan password"
+                placeholder="Enter your password"
                 required
                 disabled={loading}
               />
@@ -114,51 +107,42 @@ const Login = () => {
               {loading ? (
                 <>
                   <i className="ri-loader-4-line rotating"></i>
-                  Memproses...
+                  Processing...
                 </>
               ) : (
                 <>
                   <i className="ri-login-circle-line"></i>
-                  Masuk
+                  Login Now
                 </>
               )}
             </button>
           </form>
 
-          {/* Quick Login for Testing */}
+          {/* Quick Login Section */}
           <div className="quick-login">
             <p className="quick-login-title">Quick Login (Testing)</p>
             <div className="quick-login-buttons">
-              <button 
-                onClick={() => quickLogin('dimas.rizky@intern.com')}
-                className="btn-quick"
-                disabled={loading}
-              >
-                <i className="ri-user-line"></i>
-                Intern
+              <button onClick={() => quickLogin('dimas.rizky@intern.com')} className="btn-quick" disabled={loading}>
+                <i className="ri-user-line"></i> Intern
               </button>
-              <button 
-                onClick={() => quickLogin('rina.kartika@mentor.com')}
-                className="btn-quick"
-                disabled={loading}
-              >
-                <i className="ri-team-line"></i>
-                Mentor
+              <button onClick={() => quickLogin('rina.kartika@mentor.com')} className="btn-quick" disabled={loading}>
+                <i className="ri-team-line"></i> Mentor
               </button>
-              <button 
-                onClick={() => quickLogin('dewi.lestari@sdm.com')}
-                className="btn-quick"
-                disabled={loading}
-              >
-                <i className="ri-building-line"></i>
-                SDM
+              <button onClick={() => quickLogin('dewi.lestari@sdm.com')} className="btn-quick" disabled={loading}>
+                <i className="ri-building-line"></i> SDM
               </button>
             </div>
             <p className="quick-login-note">Password: password123</p>
           </div>
+
+          {/* Taruh di paling bawah setelah div quick-login */}
+          <div className="register-footer">
+            <p>
+              Don't have an account? <Link to="/register" className="auth-link">Create Account</Link>
+            </p>
+          </div>
         </div>
 
-        {/* Decorative Elements */}
         <div className="login-decoration">
           <div className="deco-circle circle-1"></div>
           <div className="deco-circle circle-2"></div>
