@@ -52,7 +52,7 @@ const Register = () => {
               <label><i className="ri-user-line"></i> Full Name</label>
               <input 
                 type="text" 
-                placeholder="Naufal Bima" 
+                placeholder="Masukan Nama" 
                 onChange={(e) => setFormData({...formData, full_name: e.target.value})} 
                 required 
               />
@@ -98,7 +98,7 @@ const Register = () => {
               <label><i className="ri-briefcase-line"></i> Position</label>
               <input 
                 type="text" 
-                placeholder="e.g. Frontend Developer" 
+                placeholder="Masukan Posisi Magang" 
                 onChange={(e) => setFormData({...formData, position: e.target.value})} 
               />
             </div>
