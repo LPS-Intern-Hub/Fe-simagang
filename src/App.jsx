@@ -7,7 +7,6 @@ import Header from "./components/Header";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Perizinan from "./pages/Permission";
 import Presensi from "./pages/Presensi";
@@ -53,7 +52,6 @@ function App() {
         {/* PUBLIC */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
         {/* PROTECTED */}
         <Route
