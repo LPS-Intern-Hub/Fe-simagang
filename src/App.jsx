@@ -5,41 +5,40 @@ import "remixicon/fonts/remixicon.css";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Register from "./pages/Register"; // Import page Register yang baru dibuat
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Perizinan from "./pages/Perizinan";
+import Perizinan from "./pages/Permission";
 import Presensi from "./pages/Presensi";
 import Logbook from "./pages/Logbook";
 
-// Protected Route Component
+// Protected Route
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
 };
 
+// Main Layout
 const MainLayout = ({ children, activeTab, setActiveTab }) => {
-  // Get user data from localStorage
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main style={{ flex: 1, backgroundColor: "#F4F7FE" }}>
         <Header
           title="Simagang Dashboard"
-          date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          date={new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
           userName={user.full_name || "User"}
           userRole={user.role || "magang"}
         />
-        <div className="container" style={{ padding: '20px' }}>
-          {children}
-        </div>
+        <div style={{ padding: "20px" }}>{children}</div>
       </main>
     </div>
   );
@@ -51,17 +50,29 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+        {/* PUBLIC */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> {/* Register is now public */}
+        <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes */}
+        {/* PROTECTED */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <MainLayout activeTab="dashboard" setActiveTab={setActiveTab}>
                 <Dashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/presensi"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="presensi" setActiveTab={setActiveTab}>
+                <Presensi />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -89,36 +100,8 @@ function App() {
           }
         />
 
-        <Route
-          path="/presensi"
-          element={
-            <ProtectedRoute>
-              <MainLayout activeTab="presensi" setActiveTab={setActiveTab}>
-                <Presensi />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Default Route - Check if logged in */}
-        <Route 
-          path="/" 
-          element={
-            localStorage.getItem('token') 
-              ? <Navigate to="/dashboard" replace />
-              : <Navigate to="/login" replace />
-          } 
-        />
-        
-        {/* Catch all - redirect to login or dashboard */}
-        <Route 
-          path="*" 
-          element={
-            localStorage.getItem('token') 
-              ? <Navigate to="/dashboard" replace />
-              : <Navigate to="/login" replace />
-          } 
-        />
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

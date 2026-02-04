@@ -1,0 +1,321 @@
+.wrapper {
+  font-family: "Inter", sans-serif;
+  background: #ffd9b8;
+  min-height: 100vh;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+  background: #ffffff;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.logoIcon {
+  margin-right: 6px;
+}
+
+.navLinks {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  align-items: center;
+}
+
+.loginBtn {
+  background: #000;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* HERO */
+.hero {
+  padding: 80px 60px;
+}
+
+.badge {
+  background: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: inline-block;
+}
+
+.title {
+  font-size: 42px;
+  margin: 20px 0 10px;
+  line-height: 1.3;
+}
+
+.title span {
+  color: #ff8a00;
+}
+
+.subtitle {
+  max-width: 600px;
+  color: #555;
+  font-size: 16px;
+}
+
+/* CONTENT */
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 60px;
+  gap: 40px;
+}
+
+.textBox {
+  max-width: 600px;
+}
+
+.textBox h3 {
+  margin-bottom: 10px;
+}
+
+.textBox p {
+  color: #444;
+  margin-bottom: 10px;
+}
+
+/* LOGO BOX */
+.logoBox {
+  width: 180px;
+  height: 180px;
+  background: #ff9f1c;
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  font-weight: 700;
+  color: white;
+}
+
+/* FEATURES */
+.features {
+  display: flex;
+  gap: 20px;
+  margin-top: 60px;
+}
+
+.featureCard {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* MAIN FEATURE */
+.mainFeature {
+  padding: 100px 60px;
+  text-align: center;
+}
+
+.featureLabel {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #ff8a00;
+  font-weight: 600;
+}
+
+.featureTitle {
+  font-size: 36px;
+  margin: 12px 0;
+}
+
+.featureSubtitle {
+  max-width: 600px;
+  margin: 0 auto 60px;
+  color: #666;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.featureItem {
+  background: #ffffff;
+  padding: 30px 26px;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.featureIcon {
+  width: 56px;
+  height: 56px;
+  background: #ffe0c2;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin: 0 auto 16px;
+}
+
+.featureItem h4 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.featureItem p {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* GUIDELINE */
+.guidelineSection {
+  padding: 100px 60px;
+  background: #fff2e6;
+  border-radius: 32px;
+  margin: 80px 40px;
+  text-align: center;
+}
+
+.guidelineLabel {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #ff8a00;
+  font-weight: 600;
+}
+
+.guidelineTitle {
+  font-size: 36px;
+  margin: 12px 0;
+}
+
+.guidelineSubtitle {
+  max-width: 600px;
+  margin: 0 auto 60px;
+  color: #666;
+}
+
+/* JAM KERJA */
+.workTimeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 80px;
+}
+
+.workCard {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.workIcon {
+  width: 48px;
+  height: 48px;
+  background: #ffe0c2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.workCard small {
+  font-size: 12px;
+  color: #777;
+}
+
+.workCard h4 {
+  margin: 8px 0;
+  font-size: 20px;
+}
+
+.workCard span {
+  font-size: 12px;
+  color: #888;
+}
+
+/* DRESSCODE */
+.dresscodeGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.dressCard {
+  background: #ffffff;
+  padding: 24px 20px;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.day {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  background: #f1f1f1;
+  padding: 4px 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.dressCard h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.dressCard p {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.simagang {
+  background-color: #ffffff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.simagang-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.simagang-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.simagang-logo img {
+  width: 32px;
+  height: 32px;
+}
+
+.simagang-logo h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.simagang-desc {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.6;
+}
