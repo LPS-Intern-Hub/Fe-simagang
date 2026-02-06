@@ -52,14 +52,25 @@ aside {
 }
 
 .brand { 
-    font-size: 22px; 
+    font-size: 18px; 
     font-weight: 800; 
     display: flex; 
     align-items: center; 
     gap: 10px; 
     margin-bottom: 50px; 
-    color: var(--primary); 
+    color: #1F2937; 
     letter-spacing: -0.5px; 
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.brand-text {
+    color: #1F2937;
+    font-weight: 800;
 }
 
 .nav-item { 
@@ -76,9 +87,17 @@ aside {
     font-size: 14px; 
 }
 
+.nav-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
 .nav-item:hover, .nav-item.active { 
-    background: #FFF0E6; 
+    background: linear-gradient(90.03deg, #FFE3D0 0.03%, #FFFFFF 116.08%); 
     color: var(--primary); 
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
 }
 
 .btn-logout { 
@@ -88,13 +107,14 @@ aside {
     color: var(--red); 
     border: none; 
     border-radius: 12px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    margin-top: auto; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 8px; 
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 /* Main Content Area */

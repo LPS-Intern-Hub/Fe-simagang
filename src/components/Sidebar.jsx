@@ -6,16 +6,17 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const location = useLocation(); 
 
   const menuItems = [
-    { id: "dashboard", icon: "dashboard-3", label: "Dashboard" },
-    { id: "perizinan", icon: "file-text", label: "Perizinan" },
-    { id: "presensi", icon: "map-pin-user", label: "Presensi" },
-    { id: "logbook", icon: "book-open", label: "Logbook" },
+    { id: "dashboard", icon: "/images/dashboard.png", label: "Dashboard" },
+    { id: "perizinan", icon: "/images/permission.png", label: "Perizinan" },
+    { id: "presensi", icon: "/images/absen.png", label: "Presensi" },
+    { id: "logbook", icon: "/images/logbook.png", label: "Logbook" },
   ];
 
   return (
     <aside>
       <div className="brand">
-        <i className="ri-flashlight-fill"></i> SIMAGANG
+        <img src="/images/navbarLogo.png" alt="SIMAGANG Logo" className="brand-logo" />
+        <span className="brand-text">SIMAGANG</span>
       </div>
       <nav>
         {menuItems.map((item) => (
@@ -25,7 +26,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             className={`nav-item ${location.pathname.includes(item.id) ? "active" : ""}`}
             onClick={() => setActiveTab(item.id)} 
           >
-            <i className={`ri-${item.icon}-line`}></i>
+            <img src={item.icon} alt={item.label} className="nav-icon" />
             <span style={{ textTransform: "capitalize" }}>{item.label}</span>
           </Link>
         ))}

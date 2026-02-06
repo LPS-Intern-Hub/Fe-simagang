@@ -10,7 +10,7 @@
 .loginContainer {
   display: flex;
   background: #fff;
-  border-radius: 24px;
+  border-radius: 25px;
   box-shadow: 0 4px 32px rgba(255, 107, 0, 0.08);
   overflow: hidden;
   max-width: 800px;
@@ -25,8 +25,8 @@
   align-items: center;
   justify-content: center;
   padding: 48px 32px 32px 32px;
-  border-top-left-radius: 24px;
-  border-bottom-left-radius: 24px;
+  border-top-right-radius: 100px;
+  border-bottom-right-radius: 100px;
   position: relative;
 }
 .loginLogo {
@@ -37,7 +37,7 @@
 }
 .loginCopyright {
   color: #fff;
-  font-size: 12px;
+  font-size: 8px;
   opacity: 0.8;
   position: absolute;
   bottom: 24px;
@@ -53,15 +53,16 @@
   flex-direction: column;
   justify-content: center;
   padding: 48px 40px 40px 40px;
-  border-top-right-radius: 24px;
-  border-bottom-right-radius: 24px;
+  border-top-right-radius: 25px;
+  border-bottom-right-radius: 25px;
 }
 .loginTitle {
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 800;
   color: #222;
   margin-bottom: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
 }
 .loginSubtitle {
   color: #6b7280;
@@ -98,10 +99,10 @@
 .loginBtn {
   margin-top: 12px;
   padding: 12px 0;
-  border-radius: 8px;
-  border: 2px solid #ff6b00;
-  background: #fff;
-  color: #ff6b00;
+  border-radius: 16px;
+  border: 2px solid #FF6B00;
+  background: #FFF0E6;
+  color: #FF6B00;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -109,7 +110,7 @@
   transition: background 0.2s, color 0.2s;
 }
 .loginBtn:hover {
-  background: #ff6b00;
+  background: #FF6B00;
   color: #fff;
 }
 
