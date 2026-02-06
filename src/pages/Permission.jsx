@@ -160,17 +160,19 @@ return (
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <button 
-                            onClick={() => handleEdit(item)} 
-                            style={{ background: '#DBEAFE', color: '#1E40AF', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                          <button
+                            onClick={() => handleEdit(item)}
+                            style={{ background: '#DBEAFE', color: '#1E40AF', border: 'none', padding: '6px', borderRadius: '6px', cursor: (['pending','rejected'].includes(item.status) ? 'pointer' : 'not-allowed'), opacity: (['pending','rejected'].includes(item.status) ? 1 : 0.5) }}
                             title="Edit"
+                            disabled={!['pending','rejected'].includes(item.status)}
                           >
                             <i className="ri-edit-line"></i>
                           </button>
-                          <button 
-                            onClick={() => handleDelete(item.id_permissions)} 
-                            style={{ background: '#FEE2E2', color: '#991B1B', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                          <button
+                            onClick={() => handleDelete(item.id_permissions)}
+                            style={{ background: '#FEE2E2', color: '#991B1B', border: 'none', padding: '6px', borderRadius: '6px', cursor: (['pending','rejected'].includes(item.status) ? 'pointer' : 'not-allowed'), opacity: (['pending','rejected'].includes(item.status) ? 1 : 0.5) }}
                             title="Delete"
+                            disabled={!['pending','rejected'].includes(item.status)}
                           >
                             <i className="ri-delete-bin-line"></i>
                           </button>

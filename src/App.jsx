@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Perizinan from "./pages/Permission";
 import Presensi from "./pages/Presensi";
 import Logbook from "./pages/Logbook";
+import ResetPassword from "./pages/ResetPassword";
 
 // Protected Route
 const ProtectedRoute = ({ children }) => {
@@ -96,6 +97,11 @@ function App() {
               </MainLayout>
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="/reset-password"
+          element={<ResetPassword />}
         />
 
         {/* FALLBACK */}

@@ -51,44 +51,93 @@ const Presensi = () => {
   };
 
   const capture = useCallback(async () => {
-    try {
-      setSubmitting(true);
-      const imageSrc = webcamRef.current.getScreenshot();
-      
-      if (type === "in") {
-        // Convert base64 to blob
-        const blob = await fetch(imageSrc).then(r => r.blob());
-        const formData = new FormData();
-        formData.append('image', blob, 'checkin.jpg');
-        formData.append('location', 'Kantor Pusat Jakarta');
-        
-        const response = await checkIn(formData);
-        
-        if (response.data.success) {
-          const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
-          setAbsenIn(time);
-          setIsCameraOpen(false);
-          alert(`✅ ${response.data.message} jam ${time}`);
-          await fetchTodayPresence();
-        }
-      } else {
-        const response = await checkOut();
-        
-        if (response.data.success) {
-          const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
-          setAbsenOut(time);
-          setIsCameraOpen(false);
-          alert(`✅ ${response.data.message} jam ${time}`);
-          await fetchTodayPresence();
-        }
+    setSubmitting(true);
+    const imageSrc = webcamRef.current.getScreenshot();
+    
+    if (type === "in") {
+      // Get current location
+      if (!navigator.geolocation) {
+        alert('Geolocation tidak didukung oleh browser Anda');
+        setSubmitting(false);
+        return;
       }
-    } catch (error) {
-      console.error('Presence error:', error);
-      console.error('Error response:', error.response?.data);
-      const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan presensi';
-      alert(`❌ ${errorMsg}`);
-    } finally {
-      setSubmitting(false);
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            // Convert base64 to blob
+            const blob = await fetch(imageSrc).then(r => r.blob());
+            const formData = new FormData();
+            formData.append('image', blob, 'checkin.jpg');
+            formData.append('latitude', position.coords.latitude.toString());
+            formData.append('longitude', position.coords.longitude.toString());
+            formData.append('location', 'Kantor Pusat Jakarta');
+            
+            const response = await checkIn(formData);
+            
+            if (response.data.success) {
+              const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+              setAbsenIn(time);
+              setIsCameraOpen(false);
+              alert(`✅ ${response.data.message} jam ${time}`);
+              await fetchTodayPresence();
+            }
+          } catch (error) {
+            console.error('Check-in error:', error);
+            const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan check-in';
+            alert(`❌ ${errorMsg}`);
+          } finally {
+            setSubmitting(false);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          alert('❌ Gagal mendapatkan lokasi. Pastikan Anda mengizinkan akses lokasi.');
+          setSubmitting(false);
+        }
+      );
+    } else {
+      // Get current location for checkout
+      if (!navigator.geolocation) {
+        alert('Geolocation tidak didukung oleh browser Anda');
+        setSubmitting(false);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            // Convert base64 to blob
+            const blob = await fetch(imageSrc).then(r => r.blob());
+            const formData = new FormData();
+            formData.append('image', blob, 'checkout.jpg');
+            formData.append('latitude', position.coords.latitude.toString());
+            formData.append('longitude', position.coords.longitude.toString());
+            formData.append('location', 'Kantor Pusat Jakarta');
+            
+            const response = await checkOut(formData);
+            
+            if (response.data.success) {
+              const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+              setAbsenOut(time);
+              setIsCameraOpen(false);
+              alert(`✅ ${response.data.message} jam ${time}`);
+              await fetchTodayPresence();
+            }
+          } catch (error) {
+            console.error('Check-out error:', error);
+            const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan check-out';
+            alert(`❌ ${errorMsg}`);
+          } finally {
+            setSubmitting(false);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          alert('❌ Gagal mendapatkan lokasi. Pastikan Anda mengizinkan akses lokasi.');
+          setSubmitting(false);
+        }
+      );
     }
   }, [webcamRef, type]);
 

@@ -74,8 +74,8 @@ const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
                             value={formData.type}
                             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                         >
-                            <option value="sakit">sakit</option>
-                            <option value="izin">Others / Personal Necessity</option>
+                            <option value="sakit">Sakit</option>
+                            <option value="izin">Izin (Keperluan Pribadi/Lainnya)</option>
                         </select>
                     </div>
 
@@ -91,14 +91,22 @@ const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                         <div>
                             <label className="form-label">Tanggal Mulai</label>
-                            <input type="date" className="form-input" required
+                            <input
+                                type="date"
+                                className="form-input"
+                                required
+                                min={new Date().toISOString().split('T')[0]}
                                 value={formData.start_date}
                                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                             />
                         </div>
                         <div>
                             <label className="form-label">Tanggal Akhir</label>
-                            <input type="date" className="form-input" required
+                            <input
+                                type="date"
+                                className="form-input"
+                                required
+                                min={formData.start_date || new Date().toISOString().split('T')[0]}
                                 value={formData.end_date}
                                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                             />

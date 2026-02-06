@@ -47,7 +47,9 @@ export const getPresences = (params) => api.get('/presences', { params });
 export const checkIn = (formData) => api.post('/presences/check-in', formData, {
   headers: { 'Content-Type': 'multipart/form-data' } 
 });
-export const checkOut = () => api.post('/presences/check-out');
+export const checkOut = (formData) => api.post('/presences/check-out', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 
 // --- LOGBOOK APIs ---
 export const getLogbooks = (params) => api.get('/logbooks', { params });
