@@ -7,6 +7,7 @@ import {
   getPresences
 } from "../services/api";
 import Modal from "../components/Modal";
+import ConfirmModal from "../components/ConfirmModal";
 import "remixicon/fonts/remixicon.css";
 
 const Logbook = () => {
@@ -17,6 +18,10 @@ const Logbook = () => {
   const [currentWeek, setCurrentWeek] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [logbookToDelete, setLogbookToDelete] = useState(null);
+  const [errorModal, setErrorModal] = useState({ isOpen: false, title: '', message: '' });
+  const [validationError, setValidationError] = useState('');
 
   const [editId, setEditId] = useState(null);
 
@@ -63,15 +68,16 @@ const Logbook = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationError('');
     
     // Validate minimum length
     if (formData.activity_detail.trim().length < 10) {
-      alert('Kegiatan harus minimal 10 karakter');
+      setValidationError('Kegiatan harus minimal 10 karakter');
       return;
     }
     
     if (formData.result_output.trim().length < 10) {
-      alert('Output kegiatan harus minimal 10 karakter');
+      setValidationError('Output kegiatan harus minimal 10 karakter');
       return;
     }
     
@@ -106,7 +112,11 @@ const Logbook = () => {
     } catch (error) {
       console.error('Error saving logbook:', error);
       console.error('Error details:', error.response);
-      alert(error.response?.data?.message || 'Gagal menyimpan logbook. Silakan coba lagi.');
+      setErrorModal({
+        isOpen: true,
+        title: 'Gagal Menyimpan Logbook',
+        message: error.response?.data?.message || 'Gagal menyimpan logbook. Silakan coba lagi.'
+      });
     }
   };
 
@@ -121,13 +131,26 @@ const Logbook = () => {
     setShowEditModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Yakin mau hapus logbook ini?")) return;
-    try {
-      await deleteLogbook(id);
-      fetchLogbooks();
-    } catch {
-      console.error('Failed to delete logbook');
+  const handleDelete = (id) => {
+    setLogbookToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (logbookToDelete) {
+      try {
+        await deleteLogbook(logbookToDelete);
+        fetchLogbooks();
+      } catch (error) {
+        console.error('Failed to delete logbook:', error);
+        setErrorModal({
+          isOpen: true,
+          title: 'Gagal Menghapus',
+          message: error.response?.data?.message || 'Terjadi kesalahan saat menghapus logbook'
+        });
+      } finally {
+        setLogbookToDelete(null);
+      }
     }
   };
 
@@ -274,6 +297,22 @@ const Logbook = () => {
         <h3 style={{ marginBottom: "20px", fontWeight: '700', fontSize: '18px' }}>
           Isi Logbook Baru
         </h3>
+        {validationError && (
+          <div style={{
+            padding: "12px 16px",
+            marginBottom: "16px",
+            backgroundColor: "#FEE2E2",
+            color: "#991B1B",
+            borderRadius: "8px",
+            fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            <i className="ri-error-warning-line"></i>
+            {validationError}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '15px' }}>
             <label className="form-label" style={{ fontWeight: '500', fontSize: '14px', marginBottom: '8px', display: 'block' }}>Tanggal</label>
@@ -282,7 +321,10 @@ const Logbook = () => {
               className="form-input"
               required
               value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, date: e.target.value });
+                setValidationError('');
+              }}
               style={{ width: '100%' }}
             />
           </div>
@@ -294,7 +336,10 @@ const Logbook = () => {
               rows="4"
               required
               value={formData.activity_detail}
-              onChange={(e) => setFormData({ ...formData, activity_detail: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, activity_detail: e.target.value });
+                setValidationError('');
+              }}
               style={{ width: '100%', resize: 'vertical' }}
               minLength={10}
             />
@@ -307,7 +352,10 @@ const Logbook = () => {
               rows="4"
               required
               value={formData.result_output}
-              onChange={(e) => setFormData({ ...formData, result_output: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, result_output: e.target.value });
+                setValidationError('');
+              }}
               style={{ width: '100%', resize: 'vertical' }}
               minLength={10}
             />
@@ -795,6 +843,7 @@ const Logbook = () => {
                 onClick={() => {
                   setShowEditModal(false);
                   setEditId(null);
+                  setValidationError('');
                   setFormData({
                     date: "",
                     activity_detail: "",
@@ -813,6 +862,22 @@ const Logbook = () => {
                 ×
               </button>
             </div>
+            {validationError && (
+              <div style={{
+                padding: "12px 16px",
+                marginBottom: "16px",
+                backgroundColor: "#FEE2E2",
+                color: "#991B1B",
+                borderRadius: "8px",
+                fontSize: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px"
+              }}>
+                <i className="ri-error-warning-line"></i>
+                {validationError}
+              </div>
+            )}
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontWeight: '500', fontSize: '14px', marginBottom: '8px', color: '#333' }}>
@@ -823,7 +888,10 @@ const Logbook = () => {
                   className="form-input"
                   required
                   value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, date: e.target.value });
+                    setValidationError('');
+                  }}
                   style={{ width: '100%' }}
                 />
               </div>
@@ -836,7 +904,10 @@ const Logbook = () => {
                   rows="4"
                   required
                   value={formData.activity_detail}
-                  onChange={(e) => setFormData({ ...formData, activity_detail: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, activity_detail: e.target.value });
+                    setValidationError('');
+                  }}
                   style={{ width: '100%', resize: 'vertical' }}
                   minLength={10}
                 />
@@ -850,7 +921,10 @@ const Logbook = () => {
                   rows="4"
                   required
                   value={formData.result_output}
-                  onChange={(e) => setFormData({ ...formData, result_output: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, result_output: e.target.value });
+                    setValidationError('');
+                  }}
                   style={{ width: '100%', resize: 'vertical' }}
                   minLength={10}
                 />
@@ -879,6 +953,31 @@ const Logbook = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setLogbookToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Anda yakin ingin menghapus data ini?"
+        subtitle="Data yang telah dihapus tidak dapat dipulihkan."
+        confirmText="Ya, hapus"
+        cancelText="Batal"
+        image="/images/remove.png"
+        confirmButtonStyle="danger"
+      />
+
+      {/* Error Modal */}
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+        type="error"
+        title={errorModal.title}
+        message={errorModal.message}
+      />
     </div>
   );
 };

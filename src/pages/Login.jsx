@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
+import { motion } from "framer-motion";
 import styles from "../styles/Login.module.css";
 
 const Login = () => {
@@ -35,7 +36,12 @@ const Login = () => {
 
   return (
     <div className={styles.loginPage}>
-      <div className={styles.loginContainer}>
+      <motion.div 
+        className={styles.loginContainer}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
         <div className={styles.loginLeft}>
           <img src="/images/loginLogo.png" alt="Login Logo" className={styles.loginLogo} />
           <div className={styles.loginCopyright}>
@@ -101,7 +107,7 @@ const Login = () => {
             </button>
           </form>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -11,7 +11,7 @@
   display: flex;
   background: #fff;
   border-radius: 25px;
-  box-shadow: 0 4px 32px rgba(255, 107, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(255, 107, 0, 0.3);
   overflow: hidden;
   max-width: 800px;
   width: 100%;

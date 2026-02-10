@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { verifyResetToken, resetPassword } from "../services/api";
 import Modal from "../components/Modal";
+import { motion } from "framer-motion";
 import styles from "../styles/Login.module.css";
 
 const NewPassword = () => {
@@ -95,7 +96,12 @@ const NewPassword = () => {
     if (verifying) {
         return (
             <div className={styles.loginPage}>
-                <div className={styles.loginContainer}>
+                <motion.div 
+                    className={styles.loginContainer}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                >
                     <div className={styles.loginLeft}>
                         <img src="/images/loginLogo.png" alt="Login Logo" className={styles.loginLogo} />
                         <div className={styles.loginCopyright}>
@@ -108,7 +114,7 @@ const NewPassword = () => {
                             Mohon tunggu sebentar.
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         );
     }
@@ -116,7 +122,12 @@ const NewPassword = () => {
     if (!tokenValid) {
         return (
             <div className={styles.loginPage}>
-                <div className={styles.loginContainer}>
+                <motion.div 
+                    className={styles.loginContainer}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                >
                     <div className={styles.loginLeft}>
                         <img src="/images/loginLogo.png" alt="Login Logo" className={styles.loginLogo} />
                         <div className={styles.loginCopyright}>
@@ -135,14 +146,19 @@ const NewPassword = () => {
                             Kembali ke Login
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         );
     }
 
     return (
         <div className={styles.loginPage}>
-            <div className={styles.loginContainer}>
+            <motion.div 
+                className={styles.loginContainer}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+            >
                 <div className={styles.loginLeft}>
                     <img src="/images/loginLogo.png" alt="Login Logo" className={styles.loginLogo} />
                     <div className={styles.loginCopyright}>
@@ -268,7 +284,6 @@ const NewPassword = () => {
                         Kembali ke Login
                     </div>
                 </div>
-            </div>
 
             {/* Modal */}
             <Modal
@@ -278,6 +293,7 @@ const NewPassword = () => {
                 title={modal.title}
                 message={modal.message}
             />
+            </motion.div>
         </div>
     );
 };

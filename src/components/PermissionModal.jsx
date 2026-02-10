@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPermission, updatePermission } from '../services/api';
+import Modal from './Modal';
 
 const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
     const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
         end_date: ''
     });
     const [submitting, setSubmitting] = useState(false);
+    const [modal, setModal] = useState({ isOpen: false, type: 'success', title: '', message: '' });
 
     useEffect(() => {
         if (editData) {
@@ -44,15 +46,31 @@ const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
             }
 
             if (response.data.success) {
-                alert(`✅ Success: ${editData ? 'Permission updated' : 'Permission submitted'}`);
-                onClose();
-                onRefresh();
+                setModal({
+                    isOpen: true,
+                    type: 'success',
+                    title: editData ? 'Izin Berhasil Diperbarui!' : 'Izin Berhasil Diajukan!',
+                    message: editData ? 'Perubahan izin berhasil disimpan.' : 'Pengajuan izin Anda telah berhasil dikirim dan menunggu persetujuan.'
+                });
             }
         } catch (error) {
-            const errorMsg = error.response?.data?.message || "An error occurred";
-            alert("❌ Failed: " + errorMsg);
-        } finally {
+            const errorMsg = error.response?.data?.message || "Terjadi kesalahan";
+            setModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Gagal Menyimpan',
+                message: errorMsg
+            });
             setSubmitting(false);
+        }
+    };
+
+    const handleModalClose = () => {
+        setModal({ ...modal, isOpen: false });
+        if (modal.type === 'success') {
+            setSubmitting(false);
+            onClose();
+            onRefresh();
         }
     };
 
@@ -133,6 +151,15 @@ const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
                     </button>
                 </form>
             </div>
+
+            {/* Success/Error Modal */}
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={handleModalClose}
+                type={modal.type}
+                title={modal.title}
+                message={modal.message}
+            />
         </div>
     );
 };

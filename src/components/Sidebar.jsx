@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import ConfirmModal from "./ConfirmModal";
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuItems = [
     { id: "dashboard", icon: "/images/dashboard.png", iconOren: "/images/dashboardOren.png", label: "Dashboard" },
@@ -66,15 +68,26 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         </div>
         <button
           className="btn-logout-icon"
-          onClick={() => {
-            localStorage.clear();
-            navigate('/login');
-          }}
+          onClick={() => setShowLogoutModal(true)}
           title="Keluar"
         >
           <i className="ri-logout-box-r-line"></i>
         </button>
       </div>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          localStorage.clear();
+          navigate('/');
+        }}
+        title="Apakah Anda yakin ingin mengakhiri sesi ini?"
+        confirmText="Keluar"
+        cancelText="Batal"
+        image="/images/logout.png"
+        confirmButtonStyle="primary"
+      />
     </aside>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { requestPasswordReset } from "../services/api";
+import { motion } from "framer-motion";
 import styles from "../styles/Login.module.css";
 
 const ResetPassword = () => {
@@ -29,7 +30,12 @@ const ResetPassword = () => {
 
   return (
     <div className={styles.loginPage}>
-      <div className={styles.loginContainer}>
+      <motion.div 
+        className={styles.loginContainer}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
         <div className={styles.loginLeft}>
           <img src="/images/loginLogo.png" alt="Login Logo" className={styles.loginLogo} />
           <div className={styles.loginCopyright}>
@@ -91,7 +97,7 @@ const ResetPassword = () => {
             Kembali
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
