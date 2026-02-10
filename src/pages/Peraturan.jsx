@@ -82,8 +82,8 @@ const Peraturan = () => {
         }}>
           {/* Total Jam Kerja */}
           <div style={{
-            background: '#F9FAFB',
-            border: '1px solid #E5E7EB',
+            background: '#FFFFFF',
+            border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '20px',
             textAlign: 'center',
@@ -91,7 +91,7 @@ const Peraturan = () => {
             cursor: 'default'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 107, 0, 0.22)';
             e.currentTarget.style.transform = 'translateY(-2px)';
           }}
           onMouseLeave={(e) => {
@@ -140,8 +140,8 @@ const Peraturan = () => {
 
           {/* Jam Masuk */}
           <div style={{
-            background: '#F9FAFB',
-            border: '1px solid #E5E7EB',
+            background: '#FFFFFF',
+            border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '20px',
             textAlign: 'center',
@@ -149,7 +149,7 @@ const Peraturan = () => {
             cursor: 'default'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 107, 0, 0.22)';
             e.currentTarget.style.transform = 'translateY(-2px)';
           }}
           onMouseLeave={(e) => {
@@ -198,8 +198,8 @@ const Peraturan = () => {
 
           {/* Jam Istirahat */}
           <div style={{
-            background: '#F9FAFB',
-            border: '1px solid #E5E7EB',
+            background: '#FFFFFF',
+            border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '20px',
             textAlign: 'center',
@@ -207,7 +207,7 @@ const Peraturan = () => {
             cursor: 'default'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 107, 0, 0.22)';
             e.currentTarget.style.transform = 'translateY(-2px)';
           }}
           onMouseLeave={(e) => {
@@ -275,7 +275,7 @@ const Peraturan = () => {
         }}>
           {/* Senin - Kemeja Putih */}
           <div style={{
-            background: '#F9FAFB',
+            background: '#FFFFFF',
             border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '16px',
@@ -330,7 +330,7 @@ const Peraturan = () => {
 
           {/* Selasa - Batik */}
           <div style={{
-            background: '#F9FAFB',
+            background: '#FFFFFF',
             border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '16px',
@@ -385,7 +385,7 @@ const Peraturan = () => {
 
           {/* Rabu - Warna Terang */}
           <div style={{
-            background: '#F9FAFB',
+            background: '#FFFFFF',
             border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '16px',
@@ -440,7 +440,7 @@ const Peraturan = () => {
 
           {/* Kamis - Terang/Batik */}
           <div style={{
-            background: '#F9FAFB',
+            background: '#FFFFFF',
             border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '16px',
@@ -495,7 +495,7 @@ const Peraturan = () => {
 
           {/* Jumat - Smart Casual */}
           <div style={{
-            background: '#F9FAFB',
+            background: '#FFFFFF',
             border: '1px solid rgba(255, 107, 0, 0.35)',
             borderRadius: '12px',
             padding: '16px',

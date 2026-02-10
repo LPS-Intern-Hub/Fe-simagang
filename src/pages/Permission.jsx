@@ -79,9 +79,7 @@ const Perizinan = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      'sent': '#FEF3C7 #B45309',
-      'review_mentor': '#DBEAFE #1E40AF',
-      'review_kadiv': '#E0E7FF #4338CA',
+      'pending': '#FEF3C7 #B45309',
       'approved': '#DCFCE7 #15803D',
       'rejected': '#FEE2E2 #991B1B'
     };
@@ -91,9 +89,7 @@ const Perizinan = () => {
   // Helper function untuk label status
   const getStatusLabel = (status) => {
     const labels = {
-      'sent': 'Terkirim',
-      'review_mentor': 'Review Mentor',
-      'review_kadiv': 'Review Kadiv',
+      'pending': 'Menunggu Persetujuan',
       'approved': 'Disetujui',
       'rejected': 'Ditolak'
     };
@@ -103,7 +99,7 @@ const Perizinan = () => {
   // Filter permissions berdasarkan tab
   const getFilteredPermissions = () => {
     if (activeTab === 'semua') return permissions;
-    if (activeTab === 'diproses') return permissions.filter(p => ['sent', 'review_mentor', 'review_kadiv'].includes(p.status));
+    if (activeTab === 'diproses') return permissions.filter(p => p.status === 'pending');
     if (activeTab === 'disetujui') return permissions.filter(p => p.status === 'approved');
     if (activeTab === 'ditolak') return permissions.filter(p => p.status === 'rejected');
     return permissions;
@@ -127,39 +123,55 @@ const Perizinan = () => {
         </button>
       </div>
 
-      {/* Tab Navigation */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '8px', 
-        marginBottom: '20px',
-        borderBottom: '1px solid #E5E7EB',
-        paddingBottom: '0'
+      {/* Tab Navigation Container */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '20px',
+        padding: '8px 16px',
+        marginBottom: '25px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
       }}>
-        {[
-          { id: 'semua', label: 'Semua' },
-          { id: 'diproses', label: 'Diproses' },
-          { id: 'disetujui', label: 'Disetujui' },
-          { id: 'ditolak', label: 'Ditolak' }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: '12px 24px',
-              fontSize: '14px',
-              fontWeight: activeTab === tab.id ? '600' : '500',
-              color: activeTab === tab.id ? '#FF6B00' : '#64748B',
-              cursor: 'pointer',
-              borderBottom: activeTab === tab.id ? '3px solid #FF6B00' : '3px solid transparent',
-              transition: 'all 0.2s ease',
-              fontFamily: "'Plus Jakarta Sans', sans-serif"
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          gap: '0'
+        }}>
+          {[
+            { id: 'semua', label: 'Semua' },
+            { id: 'diproses', label: 'Diproses' },
+            { id: 'disetujui', label: 'Disetujui' },
+            { id: 'ditolak', label: 'Ditolak' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                background: activeTab === tab.id 
+                  ? 'linear-gradient(90deg, #FFC79F -66.22%, #FF6B00 117.57%)' 
+                  : 'transparent',
+                border: 'none',
+                outline: 'none',
+                boxShadow: 'none',
+                borderRadius: '14px',
+                padding: '6px 20px',
+                width: '205px',
+                height: '35px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: activeTab === tab.id ? '#FFFFFF' : '#9CA3AF',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ padding: '0' }}>
@@ -181,7 +193,7 @@ const Perizinan = () => {
             {filteredPermissions.map((item) => {
               const isApproved = item.status === 'approved';
               const isRejected = item.status === 'rejected';
-              const isProcessing = ['sent', 'review_mentor', 'review_kadiv'].includes(item.status);
+              const isProcessing = item.status === 'pending';
               
               return (
                 <div
