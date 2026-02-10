@@ -15,6 +15,8 @@ const Presensi = () => {
   const [todayPresence, setTodayPresence] = useState(null);
   const [presenceHistory, setPresenceHistory] = useState([]);
   const [isHoveringAbsen, setIsHoveringAbsen] = useState(false);
+  const [canCheckOut, setCanCheckOut] = useState(false);
+  const [remainingTime, setRemainingTime] = useState('');
   const [modal, setModal] = useState({ 
     isOpen: false, 
     type: 'success', 
@@ -28,6 +30,86 @@ const Presensi = () => {
     fetchTodayPresence();
     fetchPresenceHistory();
   }, []);
+
+  // Check if 9 hours have passed since check-in
+  useEffect(() => {
+    if (!todayPresence?.check_in || todayPresence?.check_out) {
+      setCanCheckOut(false);
+      setRemainingTime('');
+      return;
+    }
+
+    const checkInterval = setInterval(() => {
+      try {
+        // Parse date (YYYY-MM-DD)
+        let dateStr;
+        if (typeof todayPresence.date === 'string') {
+          dateStr = todayPresence.date.split('T')[0];
+        } else {
+          dateStr = new Date(todayPresence.date).toISOString().split('T')[0];
+        }
+        
+        // Parse time (HH:MM:SS)
+        let timeStr;
+        if (typeof todayPresence.check_in === 'string') {
+          // If it's already a time string like "09:49:50" or full datetime
+          if (todayPresence.check_in.includes('T')) {
+            timeStr = todayPresence.check_in.split('T')[1].split('.')[0];
+          } else {
+            timeStr = todayPresence.check_in.split('.')[0]; // Remove milliseconds if any
+          }
+        } else {
+          const checkInDate = new Date(todayPresence.check_in);
+          timeStr = checkInDate.toTimeString().split(' ')[0]; // Get HH:MM:SS
+        }
+        
+        // Combine date and time
+        const checkInTime = new Date(`${dateStr}T${timeStr}`);
+        
+        console.log('Date string:', dateStr);
+        console.log('Time string:', timeStr);
+        console.log('Combined check-in time:', checkInTime);
+        
+        // Validate checkInTime
+        if (isNaN(checkInTime.getTime())) {
+          console.error('Invalid check-in time');
+          setCanCheckOut(false);
+          setRemainingTime('');
+          return;
+        }
+        
+        const now = new Date();
+        const diffMs = now - checkInTime;
+        const nineHoursMs = 9 * 60 * 60 * 1000; // 9 jam dalam milidetik
+
+        console.log('Now:', now);
+        console.log('Diff (hours):', (diffMs / (60 * 60 * 1000)).toFixed(2));
+
+        if (diffMs >= nineHoursMs) {
+          setCanCheckOut(true);
+          setRemainingTime('');
+        } else if (diffMs > 0) {
+          setCanCheckOut(false);
+          const remainingMs = nineHoursMs - diffMs;
+          const hours = Math.floor(remainingMs / (60 * 60 * 1000));
+          const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+          const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000);
+          
+          setRemainingTime(`${hours} jam ${minutes} menit ${seconds} detik`);
+        } else {
+          // Future time (shouldn't happen normally)
+          setCanCheckOut(false);
+          setRemainingTime('9 jam 0 menit 0 detik');
+        }
+      } catch (error) {
+        console.error('Error calculating remaining time:', error);
+        setCanCheckOut(false);
+        setRemainingTime('');
+      }
+    }, 1000);
+
+    return () => clearInterval(checkInterval);
+  }, [todayPresence]);
 
   const fetchPresenceHistory = async () => {
     try {
@@ -310,7 +392,7 @@ const Presensi = () => {
               onClick={() => handleOpenCamera(absenIn === "--:--" ? "in" : "out")}
               onMouseEnter={() => setIsHoveringAbsen(true)}
               onMouseLeave={() => setIsHoveringAbsen(false)}
-              disabled={(absenIn !== "--:--" && absenOut !== "--:--") || submitting}
+              disabled={(absenIn !== "--:--" && absenOut !== "--:--") || submitting || (absenIn !== "--:--" && absenOut === "--:--" && !canCheckOut)}
               style={{
                 width: '100%',
                 maxWidth: '400px',
@@ -318,12 +400,24 @@ const Presensi = () => {
                 display: 'block',
                 padding: '14px',
                 borderRadius: '12px',
-                border: absenIn === "--:--" ? 'none' : (absenOut !== "--:--" || submitting) ? '2px solid #E5E7EB' : '2px solid #EF4444',
-                background: absenIn === "--:--" ? '#2C3E50' : (absenOut !== "--:--" || submitting) ? '#F3F4F6' : (isHoveringAbsen && absenOut === "--:--" ? '#FF0000' : 'white'),
-                color: absenIn === "--:--" ? 'white' : (absenOut !== "--:--" || submitting) ? '#9CA3AF' : (isHoveringAbsen && absenOut === "--:--" ? '#FFFFFF' : '#EF4444'),
+                border: absenIn === "--:--" 
+                  ? 'none' 
+                  : (absenOut !== "--:--" || submitting || !canCheckOut) 
+                    ? '2px solid #E5E7EB' 
+                    : '2px solid #EF4444',
+                background: absenIn === "--:--" 
+                  ? '#2C3E50' 
+                  : (absenOut !== "--:--" || submitting || (absenOut === "--:--" && !canCheckOut)) 
+                    ? '#F3F4F6' 
+                    : (isHoveringAbsen && absenOut === "--:--" ? '#FF0000' : 'white'),
+                color: absenIn === "--:--" 
+                  ? 'white' 
+                  : (absenOut !== "--:--" || submitting || (absenOut === "--:--" && !canCheckOut)) 
+                    ? '#9CA3AF' 
+                    : (isHoveringAbsen && absenOut === "--:--" ? '#FFFFFF' : '#EF4444'),
                 fontSize: '15px',
                 fontWeight: '600',
-                cursor: (absenIn !== "--:--" && absenOut !== "--:--") || submitting ? 'not-allowed' : 'pointer',
+                cursor: (absenIn !== "--:--" && absenOut !== "--:--") || submitting || (absenIn !== "--:--" && !canCheckOut) ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s'
               }}
             >
@@ -332,7 +426,7 @@ const Presensi = () => {
                 : absenIn === "--:--"
                   ? "Absen Masuk"
                   : absenOut === "--:--"
-                    ? "Absen Pulang"
+                    ? (canCheckOut ? "Absen Pulang" : `Tunggu ${remainingTime} lagi`)
                     : "Sudah Absen Hari Ini"
               }
             </button>

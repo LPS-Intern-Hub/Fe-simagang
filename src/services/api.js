@@ -41,8 +41,24 @@ export const resetPassword = (token, newPassword) => api.post('/auth/reset-passw
 // --- PERMISSION (PERIZINAN) APIs ---
 export const getPermissions = (params) => api.get('/permissions', { params });
 export const getPermissionById = (id) => api.get(`/permissions/${id}`);
-export const createPermission = (data) => api.post('/permissions', data);
-export const updatePermission = (id, data) => api.put(`/permissions/${id}`, data);
+export const createPermission = (data) => {
+  // Check if data is FormData (for file upload)
+  if (data instanceof FormData) {
+    return api.post('/permissions', data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+  return api.post('/permissions', data);
+};
+export const updatePermission = (id, data) => {
+  // Check if data is FormData (for file upload)
+  if (data instanceof FormData) {
+    return api.put(`/permissions/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+  return api.put(`/permissions/${id}`, data);
+};
 export const deletePermission = (id) => api.delete(`/permissions/${id}`);
 
 // --- PRESENCE (ABSENSI) APIs ---

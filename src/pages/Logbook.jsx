@@ -20,6 +20,8 @@ const Logbook = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [logbookToDelete, setLogbookToDelete] = useState(null);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
   const [errorModal, setErrorModal] = useState({ isOpen: false, title: '', message: '' });
   const [validationError, setValidationError] = useState('');
 
@@ -154,21 +156,31 @@ const Logbook = () => {
     }
   };
 
-  const submitToMentor = async () => {
+  const handleSubmitClick = () => {
     const draftLogbooks = logbooks.filter(l => l.status === 'draft');
     if (draftLogbooks.length === 0) {
       return;
     }
-    
-    if (!window.confirm(`Ajukan ${draftLogbooks.length} logbook draft ke mentor?`)) return;
+    setShowSubmitModal(true);
+  };
+
+  const submitToMentor = async () => {
+    setShowSubmitModal(false);
+    const draftLogbooks = logbooks.filter(l => l.status === 'draft');
     
     try {
       for (const logbook of draftLogbooks) {
         await updateLogbook(logbook.id_logbooks, { ...logbook, status: 'sent' });
       }
-      fetchLogbooks();
-    } catch {
-      console.error('Failed to submit logbooks');
+      await fetchLogbooks();
+      setShowSubmitSuccessModal(true);
+    } catch (error) {
+      console.error('Failed to submit logbooks:', error);
+      setErrorModal({
+        isOpen: true,
+        title: 'Gagal Mengajukan Logbook',
+        message: error.response?.data?.message || 'Terjadi kesalahan saat mengajukan logbook ke mentor'
+      });
     }
   };
 
@@ -396,7 +408,7 @@ const Logbook = () => {
               Draft: {currentWeekLogbooks[0] && formatMonth(currentWeekLogbooks[0].date)}
             </h3>
             <button
-              onClick={submitToMentor}
+              onClick={handleSubmitClick}
               style={{
                 background: '#FF6B00',
                 color: '#fff',
@@ -968,6 +980,28 @@ const Logbook = () => {
         cancelText="Batal"
         image="/images/remove.png"
         confirmButtonStyle="danger"
+      />
+
+      {/* Submit Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showSubmitModal}
+        onClose={() => setShowSubmitModal(false)}
+        onConfirm={submitToMentor}
+        title="Ajukan logbook ke mentor?"
+        subtitle={`Anda akan mengajukan ${draftLogbooks.length} logbook draft ke mentor untuk disetujui.`}
+        confirmText="Ya, ajukan"
+        cancelText="Batal"
+        image="/images/absenMasuk.png"
+        confirmButtonStyle="primary"
+      />
+
+      {/* Submit Success Modal */}
+      <Modal
+        isOpen={showSubmitSuccessModal}
+        onClose={() => setShowSubmitSuccessModal(false)}
+        type="success"
+        title="Logbook Berhasil Diajukan!"
+        message="Logbook Anda telah berhasil diajukan ke mentor untuk ditinjau."
       />
 
       {/* Error Modal */}
