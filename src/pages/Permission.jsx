@@ -92,6 +92,14 @@ const Perizinan = () => {
   const getStatusLabel = (status) => {
     const labels = {
       'sent': 'Terkirim',
+      'review_mentor': 'Review Mentor',
+      'review_kadiv': 'Review Kadiv',
+      'approved': 'Disetujui',
+      'rejected': 'Ditolak'
+    };
+    return labels[status] || status;
+  };
+
   // Filter permissions berdasarkan tab
   const getFilteredPermissions = () => {
     if (activeTab === 'semua') return permissions;
@@ -103,7 +111,7 @@ const Perizinan = () => {
 
   const filteredPermissions = getFilteredPermissions();
 
-return (
+  return (
     <div className="section-view active">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
         <div>
@@ -118,7 +126,45 @@ return (
           <i className="ri-add-circle-line"></i> Buat Pengajuan
         </button>
       </div>
-60px 20px' }}>
+
+      {/* Tab Navigation */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '8px', 
+        marginBottom: '20px',
+        borderBottom: '1px solid #E5E7EB',
+        paddingBottom: '0'
+      }}>
+        {[
+          { id: 'semua', label: 'Semua' },
+          { id: 'diproses', label: 'Diproses' },
+          { id: 'disetujui', label: 'Disetujui' },
+          { id: 'ditolak', label: 'Ditolak' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: '12px 24px',
+              fontSize: '14px',
+              fontWeight: activeTab === tab.id ? '600' : '500',
+              color: activeTab === tab.id ? '#FF6B00' : '#64748B',
+              cursor: 'pointer',
+              borderBottom: activeTab === tab.id ? '3px solid #FF6B00' : '3px solid transparent',
+              transition: 'all 0.2s ease',
+              fontFamily: "'Plus Jakarta Sans', sans-serif"
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '0' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <i className="ri-loader-4-line rotating" style={{ fontSize: '32px', color: '#FF6B00' }}></i>
             <p style={{ marginTop: '10px', color: '#6B7280' }}>Loading data...</p>
           </div>
@@ -285,53 +331,7 @@ return (
             <p style={{ color: '#9CA3AF', fontWeight: 500 }}>
               {activeTab === 'semua' ? 'Belum ada pengajuan perizinan' : `Tidak ada izin yang ${activeTab}`}
             </p>
-          </div     </td>
-                      <td>
-                        <span style={{
-                          padding: '6px 14px',
-                          background: bgColor,
-                          color: textColor,
-                          borderRadius: '20px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          letterSpacing: '0.5px'
-                        }}>
-                          {getStatusLabel(item.status)}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            onClick={() => handleEdit(item)}
-                            style={{ background: '#DBEAFE', color: '#1E40AF', border: 'none', padding: '6px', borderRadius: '6px', cursor: (['pending','rejected'].includes(item.status) ? 'pointer' : 'not-allowed'), opacity: (['pending','rejected'].includes(item.status) ? 1 : 0.5) }}
-                            title="Edit"
-                            disabled={!['pending','rejected'].includes(item.status)}
-                          >
-                            <i className="ri-edit-line"></i>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.id_permissions)}
-                            style={{ background: '#FEE2E2', color: '#991B1B', border: 'none', padding: '6px', borderRadius: '6px', cursor: (['pending','rejected'].includes(item.status) ? 'pointer' : 'not-allowed'), opacity: (['pending','rejected'].includes(item.status) ? 1 : 0.5) }}
-                            title="Delete"
-                            disabled={!['pending','rejected'].includes(item.status)}
-                          >
-                            <i className="ri-delete-bin-line"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="6" style={{ padding: '40px', textAlign: 'center' }}>
-                    <i className="ri-file-list-3-line" style={{ fontSize: '48px', color: '#D1D5DB', display: 'block', marginBottom: '10px' }}></i>
-                    <p style={{ color: '#9CA3AF', fontWeight: 500 }}>No permission requests found</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          </div>
         )}
       </div>
 
@@ -343,6 +343,30 @@ return (
         }} 
         onRefresh={fetchPermissions} 
         editData={selectedPermission}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setPermissionToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Anda yakin ingin menghapus data ini?"
+        subtitle="Data yang telah dihapus tidak dapat dipulihkan."
+        confirmText="Ya, hapus"
+        cancelText="Batal"
+        image="/images/remove.png"
+        confirmButtonStyle="danger"
+      />
+
+      {/* Error Modal */}
+      <Modal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+        type="error"
+        title={errorModal.title}
+        message={errorModal.message}
       />
     </div>
   );
