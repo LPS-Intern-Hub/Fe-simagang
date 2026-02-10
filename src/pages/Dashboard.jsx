@@ -19,16 +19,16 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const response = await getDashboard();
-        
+
         if (response.data.success) {
           const dashboardData = response.data.data;
-          
+
           // Set user data
           setUserData(dashboardData.user);
-          
+
           // Set internship data
           setInternshipData(dashboardData.internship_progress);
-          
+
           // Set dashboard stats
           setData({
             progress: `${dashboardData.internship_progress.percentage}%`,
@@ -75,69 +75,90 @@ const Dashboard = () => {
 
   return (
     <div className="section-view active">
-      <div className="hero-card">
-        <div className="hero-content">
-          <h2>Progress Magang</h2>
-          <p>
-            Periode: {internshipData?.start_date && internshipData?.end_date 
-              ? `${formatDate(internshipData.start_date)} - ${formatDate(internshipData.end_date)}`
-              : 'Belum ada data periode magang'
-            }
-          </p>
-          
-          <div className="progress-wrapper">
-            <div className="progress-track">
-              {/* Width pakai data dinamis */}
-              <div className="progress-fill" style={{ width: data.progress }}></div>
-            </div>
-            <div className="progress-badge">{data.progress}</div>
-          </div>
+      {/* Greeting Section */}
+      <div style={{ marginBottom: '30px' }}>
+        <h2 style={{
+          fontFamily: 'Plus Jakarta Sans',
+          fontWeight: '800',
+          fontSize: '32px',
+          lineHeight: '100%',
+          letterSpacing: '0%',
+          color: '#1F2937',
+          marginBottom: '8px'
+        }}>
+          Hello, {userData?.name || 'John'}!
+        </h2>
+        <p style={{
+          fontFamily: 'Plus Jakarta Sans',
+          fontWeight: '400',
+          fontSize: '16px',
+          lineHeight: '100%',
+          letterSpacing: '0%',
+          color: '#9CA3AF',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <img src="/images/calender.png" alt="Calendar" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+          {formatDate(new Date().toISOString())}
+        </p>
+      </div>
 
-          <div className="hero-stats">
-            <div className="stat-box-transparent">
-              <div className="sb-val">{data.hariBerjalan}</div>
-              <div className="sb-label">Hari Berjalan</div>
-            </div>
-            <div className="stat-box-transparent">
-              <div className="sb-val">{data.hariTersisa}</div>
-              <div className="sb-label">Hari Tersisa</div>
-            </div>
+      {/* Progress Magang Card */}
+      <div className="progress-card-white">
+        <h2 className="progress-title">Progress Magang</h2>
+        <p className="progress-period">
+          Periode: {internshipData?.start_date && internshipData?.end_date
+            ? `${formatDate(internshipData.start_date)} - ${formatDate(internshipData.end_date)}`
+            : '1 Oktober 2026 - 31 Januari 2026'
+          }
+        </p>
+
+        <div className="progress-wrapper-white">
+          <div className="progress-track-white">
+            <div className="progress-fill-white" style={{ width: data.progress }}></div>
+          </div>
+          <div className="progress-badge-orange">{data.progress}</div>
+        </div>
+
+        <div className="stats-grid-white">
+          <div className="stat-box-light">
+            <div className="stat-box-value">{data.hariBerjalan}</div>
+            <div className="stat-box-label">Hari Berjalan</div>
+          </div>
+          <div className="stat-box-light">
+            <div className="stat-box-value">{data.hariTersisa}</div>
+            <div className="stat-box-label">Hari Tersisa</div>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        {/* Kartu Presensi */}
-        <div className="card" style={cardStyle}>
-          <div style={{ ...iconBoxStyle, background: '#ECFDF5', color: '#10B981' }}>
-            <i className="ri-check-double-line"></i>
+        {/* Kartu Hadir Bulan Ini */}
+        <div className="dashboard-stat-card">
+          <div className="stat-icon-box" style={{ background: '#ECFDF5' }}>
+            <img src="/images/hadirBulanIni.png" alt="Hadir" style={{ width: '41px', height: '41px', objectFit: 'contain' }} />
           </div>
           <div>
-            <div style={valStyle}>{data.hadir}</div>
-            <div style={labelStyle}>Hadir Bulan Ini</div>
+            <div className="stat-value">{data.hadir}</div>
+            <div className="stat-label">Hadir Bulan Ini</div>
           </div>
         </div>
 
-        {/* Kartu Logbook */}
-        <div className="card" style={cardStyle}>
-          <div style={{ ...iconBoxStyle, background: '#FFF7ED', color: 'var(--primary)' }}>
-            <i className="ri-book-open-line"></i>
+        {/* Kartu Logbook Terisi */}
+        <div className="dashboard-stat-card">
+          <div className="stat-icon-box" style={{ background: '#FFF7ED' }}>
+            <img src="/images/logbookTerisi.png" alt="Logbook" style={{ width: '41px', height: '41px', objectFit: 'contain' }} />
           </div>
           <div>
-            <div style={valStyle}>{data.logbook}</div>
-            <div style={labelStyle}>Logbook Terisi</div>
+            <div className="stat-value">{data.logbook}</div>
+            <div className="stat-label">Logbook Terisi</div>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-// Styling Object agar JSX lebih bersih dibaca
-const cardStyle = { display: 'flex', gap: '15px', alignItems: 'center', marginBottom: 0 };
-const iconBoxStyle = { width: '50px', height: '50px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' };
-const valStyle = { fontSize: '24px', fontWeight: 800 };
-const labelStyle = { fontSize: '13px', color: '#666' };
 
 export default Dashboard;

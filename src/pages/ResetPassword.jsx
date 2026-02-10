@@ -1,15 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { requestPasswordReset } from "../services/api";
 import styles from "../styles/Login.module.css";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSent(true);
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await requestPasswordReset(email);
+      if (response.data.success) {
+        setSent(true);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Gagal mengirim email reset password. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,33 +37,58 @@ const ResetPassword = () => {
           </div>
         </div>
         <div className={styles.loginRight}>
-          <div className={styles.loginTitle}>Reset Password</div>
+          <div className={styles.loginTitle}>Lupa Password</div>
           <div className={styles.loginSubtitle}>
-            Tambahkan alamat email yang terkait dengan akunmu dan kami akan mengirimkan tautan untuk memperbarui password
+            {sent
+              ? "Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam."
+              : "Silakan masukkan alamat email yang terdaftar. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi melalui email tersebut."
+            }
           </div>
+          {error && (
+            <div style={{ color: "#ff6b00", marginBottom: 12, fontSize: 14 }}>{error}</div>
+          )}
+          {sent && (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "10px 14px",
+              marginBottom: "12px",
+              borderRadius: "8px",
+              backgroundColor: "#f0fdf4",
+              border: "1px solid #86efac",
+              fontSize: "13px",
+              fontWeight: "500",
+              fontFamily: "'Plus Jakarta Sans', sans-serif"
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span style={{ color: "#16a34a", letterSpacing: "0.01em" }}>Email berhasil dikirim! Periksa inbox Anda.</span>
+            </div>
+          )}
           <form className={styles.loginForm} onSubmit={handleSubmit} autoComplete="off">
-            <label htmlFor="email" style={{fontWeight:500,marginBottom:8,fontSize:14,color:'#222'}}>Email Address</label>
             <input
               id="email"
               type="email"
               name="email"
-              placeholder="input your email"
+              placeholder="Email"
               className={styles.loginInput}
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              disabled={sent}
-              style={{marginBottom:22}}
+              disabled={sent || loading}
             />
-            <button className={styles.loginBtn} type="submit" disabled={sent} style={{background:'#FF6B00',color:'#fff',borderColor:'#FF6B00'}}>
-              {sent ? "Email Sent!" : "Send Email"}
+            <button className={styles.loginBtn} type="submit" disabled={sent || loading}>
+              {loading ? "MENGIRIM..." : sent ? "TERKIRIM" : "KIRIM"}
             </button>
           </form>
           <div
-            style={{color:'#63687a',fontSize:15,textAlign:'center',marginTop:8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:4,userSelect:'none'}}
+            className={styles.resetBackLink}
             onClick={() => navigate("/login")}
           >
-            <span style={{fontSize:18,marginRight:2}}>←</span> Back to Sign In
+            Kembali
           </div>
         </div>
       </div>
@@ -57,3 +97,4 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+

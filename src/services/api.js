@@ -33,6 +33,10 @@ export const getDashboardStats = () => api.get('/dashboard/stats');
 // --- AUTH APIs ---
 export const login = (credentials) => api.post('/auth/login', credentials);
 export const logout = () => api.post('/auth/logout');
+export const requestPasswordReset = (email) => api.post('/auth/forgot-password', { email });
+export const verifyResetToken = (token) => api.get(`/auth/verify-reset-token/${token}`);
+export const resetPassword = (token, newPassword) => api.post('/auth/reset-password', { token, newPassword });
+
 
 // --- PERMISSION (PERIZINAN) APIs ---
 export const getPermissions = (params) => api.get('/permissions', { params });
@@ -45,7 +49,7 @@ export const deletePermission = (id) => api.delete(`/permissions/${id}`);
 export const getTodayPresence = () => api.get('/presences/today');
 export const getPresences = (params) => api.get('/presences', { params });
 export const checkIn = (formData) => api.post('/presences/check-in', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' } 
+  headers: { 'Content-Type': 'multipart/form-data' }
 });
 export const checkOut = (formData) => api.post('/presences/check-out', formData, {
   headers: { 'Content-Type': 'multipart/form-data' }

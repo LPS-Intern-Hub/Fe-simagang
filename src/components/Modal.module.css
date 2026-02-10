@@ -1,0 +1,114 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modalContent {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px 32px 32px 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.modalIcon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.iconImage {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.errorIconWrapper {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalTitle {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+
+.modalMessage {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #6b7280;
+    margin: 0 0 28px 0;
+    line-height: 1.6;
+}
+
+.modalButton {
+    width: 100%;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: 2px solid #ff6b00;
+    background: #fff0e6;
+    color: #ff6b00;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.modalButton:hover {
+    background: #ff6b00;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
+}
+
+.modalButton:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modalContent {
+        padding: 32px 24px 24px 24px;
+        border-radius: 16px;
+    }
+
+    .iconImage {
+        width: 100px;
+        height: 100px;
+    }
+
+    .modalTitle {
+        font-size: 18px;
+    }
+
+    .modalMessage {
+        font-size: 13px;
+    }
+
+    .modalButton {
+        font-size: 14px;
+        padding: 11px 20px;
+    }
+}

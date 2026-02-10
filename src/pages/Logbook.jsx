@@ -6,6 +6,7 @@ import {
   deleteLogbook,
   getPresences
 } from "../services/api";
+import Modal from "../components/Modal";
 import "remixicon/fonts/remixicon.css";
 
 const Logbook = () => {
@@ -35,9 +36,16 @@ const Logbook = () => {
     try {
       setLoading(true);
       const response = await getLogbooks();
-      setLogbooks(response.data.data || []);
+      console.log('Logbook response:', response);
+      console.log('Logbook data:', response.data);
+      const logbookData = response.data.data || [];
+      console.log('Processed logbook data:', logbookData);
+      setLogbooks(logbookData);
+      setCurrentWeek(0); // Reset to first week when data changes
       setError(null);
     } catch (err) {
+      console.error('Error fetching logbooks:', err);
+      console.error('Error response:', err.response);
       setError(err.response?.data?.message || "Gagal mengambil data logbook");
     } finally {
       setLoading(false);
@@ -58,10 +66,12 @@ const Logbook = () => {
     
     // Validate minimum length
     if (formData.activity_detail.trim().length < 10) {
+      alert('Kegiatan harus minimal 10 karakter');
       return;
     }
     
     if (formData.result_output.trim().length < 10) {
+      alert('Output kegiatan harus minimal 10 karakter');
       return;
     }
     
@@ -73,11 +83,15 @@ const Logbook = () => {
         status: "draft"
       };
 
+      console.log('Submitting logbook:', payload);
+
       if (editId) {
-        await updateLogbook(editId, payload);
+        const response = await updateLogbook(editId, payload);
+        console.log('Update response:', response);
         setShowEditModal(false);
       } else {
-        await createLogbook(payload);
+        const response = await createLogbook(payload);
+        console.log('Create response:', response);
       }
 
       setFormData({
@@ -87,10 +101,12 @@ const Logbook = () => {
         status: "draft"
       });
       setEditId(null);
-      fetchLogbooks();
+      await fetchLogbooks();
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error saving logbook:', error);
+      console.error('Error details:', error.response);
+      alert(error.response?.data?.message || 'Gagal menyimpan logbook. Silakan coba lagi.');
     }
   };
 
@@ -168,14 +184,19 @@ const Logbook = () => {
   // Group logbooks by status and month
   const draftLogbooks = logbooks.filter(l => l.status === 'draft');
   const approvedLogbooks = logbooks.filter(l => l.status === 'approved');
+  const sentLogbooks = logbooks.filter(l => l.status === 'sent' || l.status === 'reviewed' || l.status === 'approved_by_mentor');
+  
+  // Get the most recent sent/in-progress logbook to display progress
+  const inProgressLogbook = sentLogbooks.length > 0 ? sentLogbooks[0] : null;
   
   // Group draft by week (Monday-Friday only)
   const draftsByWeek = draftLogbooks.reduce((acc, logbook) => {
     const logbookDate = new Date(logbook.date);
     const dayOfWeek = logbookDate.getDay();
     
+    // Include all days (remove weekend restriction for now)
     // Skip weekends (0 = Sunday, 6 = Saturday)
-    if (dayOfWeek === 0 || dayOfWeek === 6) return acc;
+    // if (dayOfWeek === 0 || dayOfWeek === 6) return acc;
     
     const monday = getMonday(logbookDate);
     const weekKey = monday.toISOString().split('T')[0];
@@ -183,6 +204,9 @@ const Logbook = () => {
     acc[weekKey].push(logbook);
     return acc;
   }, {});
+  
+  console.log('Draft logbooks:', draftLogbooks);
+  console.log('Drafts by week:', draftsByWeek);
   
   // Sort each week's logbooks by date
   Object.keys(draftsByWeek).forEach(weekKey => {
@@ -193,6 +217,11 @@ const Logbook = () => {
   const weekKeys = Object.keys(draftsByWeek).sort((a, b) => new Date(b) - new Date(a));
   const currentWeekKey = weekKeys[currentWeek];
   const currentWeekLogbooks = currentWeekKey ? draftsByWeek[currentWeekKey] : [];
+  
+  console.log('Week keys:', weekKeys);
+  console.log('Current week:', currentWeek);
+  console.log('Current week key:', currentWeekKey);
+  console.log('Current week logbooks:', currentWeekLogbooks);
   
   // Group current week logbooks by date
   const logbooksByDate = currentWeekLogbooks.reduce((acc, logbook) => {
@@ -306,7 +335,13 @@ const Logbook = () => {
       </div>
 
       {/* Draft Logbooks Table */}
-      {currentWeekLogbooks.length > 0 && (
+      {draftLogbooks.length === 0 ? (
+        <div className="card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px', color: '#999' }}>
+          <i className="ri-file-list-line" style={{ fontSize: '48px', marginBottom: '16px', display: 'block', color: '#ddd' }}></i>
+          <p style={{ fontSize: '16px', fontWeight: '500' }}>Belum ada draft logbook</p>
+          <p style={{ fontSize: '14px' }}>Buat logbook baru dengan mengisi form di atas</p>
+        </div>
+      ) : currentWeekLogbooks.length > 0 ? (
         <div className="card" style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px' }}>
@@ -336,11 +371,11 @@ const Logbook = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
-                  <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>TANGGAL</th>
-                  <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>NO</th>
-                  <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>KEGIATAN</th>
-                  <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>OUTPUT</th>
-                  <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '100px' }}></th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '100px' }}>TANGGAL</th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '60px' }}>NO</th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>KEGIATAN</th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>OUTPUT</th>
+                  <th style={{ textAlign: 'right', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '80px' }}>AKSI</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,45 +383,52 @@ const Logbook = () => {
                   const logbooksOnDate = logbooksByDate[dateKey];
                   return (
                     <tr key={dateKey} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                      <td style={{ padding: '12px 8px', fontSize: '14px', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', whiteSpace: 'nowrap', verticalAlign: 'top', color: '#333', fontWeight: '500' }}>
                         {formatDateShort(dateKey)}
                       </td>
-                      <td style={{ padding: '12px 8px', fontSize: '14px', verticalAlign: 'top' }}>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', verticalAlign: 'top', color: '#666' }}>
                         {dateIndex + 1}
                       </td>
-                      <td style={{ padding: '12px 8px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top' }}>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top', lineHeight: '1.6' }}>
+                        <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
                           {logbooksOnDate.map(logbook => (
-                            <li key={logbook.id_logbooks} style={{ marginBottom: '8px' }}>
+                            <li key={logbook.id_logbooks} style={{ marginBottom: '6px', color: '#333' }}>
                               {logbook.activity_detail}
                             </li>
                           ))}
                         </ul>
                       </td>
-                      <td style={{ padding: '12px 8px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top' }}>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top', lineHeight: '1.6' }}>
+                        <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
                           {logbooksOnDate.map(logbook => (
-                            <li key={logbook.id_logbooks} style={{ marginBottom: '8px' }}>
+                            <li key={logbook.id_logbooks} style={{ marginBottom: '6px', color: '#333' }}>
                               {logbook.result_output}
                             </li>
                           ))}
                         </ul>
                       </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center', verticalAlign: 'top' }}>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexDirection: 'column' }}>
+                      <td style={{ padding: '16px 12px', textAlign: 'right', verticalAlign: 'top' }}>
+                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', flexDirection: 'column', alignItems: 'flex-end' }}>
                           {logbooksOnDate.map(logbook => (
-                            <div key={logbook.id_logbooks} style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <div key={logbook.id_logbooks} style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
                               <button
                                 onClick={() => handleEdit(logbook)}
                                 style={{
-                                  background: '#E3F2FD',
+                                  background: 'transparent',
                                   color: '#1976D2',
                                   border: 'none',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
+                                  padding: '4px',
+                                  borderRadius: '4px',
                                   cursor: 'pointer',
-                                  fontSize: '16px'
+                                  fontSize: '18px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s',
+                                  opacity: 1
                                 }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                                 title="Edit"
                               >
                                 <i className="ri-edit-line"></i>
@@ -394,14 +436,21 @@ const Logbook = () => {
                               <button
                                 onClick={() => handleDelete(logbook.id_logbooks)}
                                 style={{
-                                  background: '#FFEBEE',
+                                  background: 'transparent',
                                   color: '#C62828',
                                   border: 'none',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
+                                  padding: '4px',
+                                  borderRadius: '4px',
                                   cursor: 'pointer',
-                                  fontSize: '16px'
+                                  fontSize: '18px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s',
+                                  opacity: 1
                                 }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                                 title="Hapus"
                               >
                                 <i className="ri-delete-bin-line"></i>
@@ -460,6 +509,174 @@ const Logbook = () => {
             >
               ›
             </button>
+          </div>
+        </div>
+      ) : (
+        <div className="card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px', color: '#999' }}>
+          <i className="ri-file-list-line" style={{ fontSize: '48px', marginBottom: '16px', display: 'block', color: '#ddd' }}></i>
+          <p style={{ fontSize: '16px', fontWeight: '500' }}>Tidak ada draft untuk minggu yang dipilih</p>
+          <p style={{ fontSize: '14px' }}>Navigasi ke minggu lain atau buat logbook baru</p>
+        </div>
+      )}
+
+      {/* Progress Tracking Card */}
+      {inProgressLogbook && (
+        <div className="card" style={{ marginBottom: '20px' }}>
+          <h3 style={{ marginBottom: '24px', fontWeight: '600', fontSize: '16px', color: '#333' }}>
+            Laporan Logbook: {formatMonth(inProgressLogbook.date)}
+          </h3>
+          
+          <div style={{ position: 'relative', marginBottom: '40px' }}>
+            {/* Background progress line */}
+            <div style={{ 
+              position: 'absolute', 
+              left: '20px', 
+              right: '20px', 
+              top: '20px', 
+              height: '2px',
+              display: 'flex',
+              zIndex: 1
+            }}>
+              {[0, 1, 2].map((lineIndex) => {
+                const currentStatus = inProgressLogbook.status;
+                let isCompleted = false;
+                
+                // Line 0 is between step 1 and 2, Line 1 is between step 2 and 3, Line 2 is between step 3 and 4
+                if (currentStatus === 'reviewed' && lineIndex === 0) isCompleted = true;
+                else if (currentStatus === 'approved_by_mentor' && lineIndex <= 1) isCompleted = true;
+                else if (currentStatus === 'approved' && lineIndex <= 2) isCompleted = true;
+                
+                return (
+                  <div key={lineIndex} style={{
+                    flex: 1,
+                    height: '2px',
+                    background: isCompleted ? '#4CAF50' : '#E0E0E0'
+                  }} />
+                );
+              })}
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              {/* Progress steps */}
+              {[
+                { label: 'Terkirim', status: 'sent', number: 1 },
+                { label: 'Review Mentor', status: 'reviewed', number: 2 },
+                { label: 'Ka. Divisi', status: 'approved_by_mentor', number: 3 },
+                { label: 'Selesai', status: 'approved', number: 4 }
+              ].map((step, index) => {
+                // Determine step state
+                let stepState = 'pending';
+                const currentStatus = inProgressLogbook.status;
+                
+                if (currentStatus === 'sent') {
+                  if (index === 0) stepState = 'completed';
+                  else if (index === 1) stepState = 'current';
+                } else if (currentStatus === 'reviewed') {
+                  if (index <= 1) stepState = 'completed';
+                  else if (index === 2) stepState = 'current';
+                } else if (currentStatus === 'approved_by_mentor') {
+                  if (index <= 2) stepState = 'completed';
+                  else if (index === 3) stepState = 'current';
+                } else if (currentStatus === 'approved') {
+                  stepState = 'completed';
+                }
+                
+                return (
+                  <div key={step.status} style={{ 
+                    width: '25%',
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: index === 0 ? 'flex-start' : index === 3 ? 'flex-end' : 'center',
+                    position: 'relative',
+                    zIndex: 2
+                  }}>
+                    {/* Circle */}
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: stepState === 'completed' ? '#4CAF50' : stepState === 'current' ? '#FF6B00' : '#E0E0E0',
+                      border: stepState === 'current' ? '3px solid #FFF' : 'none',
+                      boxShadow: stepState === 'current' ? '0 0 0 2px #FF6B00' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: stepState === 'pending' ? '#999' : '#fff',
+                      fontSize: stepState === 'completed' ? '18px' : '14px',
+                      fontWeight: '600',
+                      marginBottom: '8px',
+                      position: 'relative',
+                      zIndex: 2
+                    }}>
+                      {stepState === 'completed' ? (
+                        <i className="ri-check-line"></i>
+                      ) : (
+                        step.number
+                      )}
+                    </div>
+                    
+                    {/* Label */}
+                    <div style={{
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      color: stepState === 'pending' ? '#999' : '#333',
+                      textAlign: 'center',
+                      marginBottom: '4px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {step.label}
+                    </div>
+                    
+                    {/* Date or Status */}
+                    <div style={{
+                      fontSize: '11px',
+                      color: stepState === 'current' ? '#FF6B00' : '#999',
+                      textAlign: 'center',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {stepState === 'completed' && inProgressLogbook.date ? 
+                        new Date(inProgressLogbook.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }) 
+                        : stepState === 'current' ? 'Sedang di review' : ''}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Status Info */}
+          <div style={{
+            padding: '14px 16px',
+            background: '#FFF8F0',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: '#FFE8CC',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <i className="ri-time-line" style={{ fontSize: '16px', color: '#FF6B00' }}></i>
+            </div>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '2px' }}>
+                {inProgressLogbook.status === 'sent' && 'Menunggu Review Mentor'}
+                {inProgressLogbook.status === 'reviewed' && 'Menunggu Review Ka. Divisi'}
+                {inProgressLogbook.status === 'approved_by_mentor' && 'Menunggu Persetujuan Final'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#666' }}>
+                {inProgressLogbook.status === 'sent' && 'Mohon tunggu, logbook sedang diperiksa oleh Mentor.'}
+                {inProgressLogbook.status === 'reviewed' && 'Mohon tunggu, logbook sedang diperiksa oleh Ka. Divisi.'}
+                {inProgressLogbook.status === 'approved_by_mentor' && 'Mohon tunggu, logbook dalam proses persetujuan akhir.'}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -539,62 +756,14 @@ const Logbook = () => {
       </div>
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            padding: '40px',
-            maxWidth: '400px',
-            textAlign: 'center',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.15)'
-          }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #84D187 0%, #4CAF50 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 24px',
-              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
-            }}>
-              <i className="ri-check-line" style={{ fontSize: '48px', color: '#fff' }}></i>
-            </div>
-            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px', color: '#333' }}>
-              Perubahan berhasil disimpan
-            </h3>
-            <button
-              onClick={() => setShowSuccessModal(false)}
-              style={{
-                marginTop: '24px',
-                padding: '10px 32px',
-                borderRadius: '8px',
-                border: '1px solid #ddd',
-                background: '#fff',
-                color: '#333',
-                fontWeight: '600',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        type="success"
+        title="Berhasil!"
+        message="Logbook berhasil disimpan ke draft"
+        buttonText="Tutup"
+      />
 
       {/* Edit Modal */}
       {showEditModal && (

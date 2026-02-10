@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import "remixicon/fonts/remixicon.css";
 
 import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -11,7 +10,10 @@ import Dashboard from "./pages/Dashboard";
 import Perizinan from "./pages/Permission";
 import Presensi from "./pages/Presensi";
 import Logbook from "./pages/Logbook";
+import Peraturan from "./pages/Peraturan";
 import ResetPassword from "./pages/ResetPassword";
+import NewPassword from "./pages/NewPassword";
+
 
 // Protected Route
 const ProtectedRoute = ({ children }) => {
@@ -28,43 +30,6 @@ const MainLayout = ({ children, activeTab, setActiveTab }) => {
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main style={{ flex: 1, backgroundColor: "#F4F7FE" }}>
-        {path === "/dashboard" ? (
-          <Header
-            title="Simagang Dashboard"
-            date={new Date().toLocaleDateString("en-US", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-            userName={user.full_name || "User"}
-            position={user.position || "Intern"}
-          />
-        ) : (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 32 }}>
-            <div className="user-profile">
-              <img
-                src={
-                  user.avatar_url ||
-                  `https://ui-avatars.com/api/?name=${user.full_name || 'User'}&background=FF6B00&color=fff`
-                }
-                className="avatar"
-                alt="User profile"
-              />
-              <div>
-                <p style={{ fontSize: "13px", fontWeight: 700, color: '#1F2937', marginBottom: '2px' }}>{user.full_name || 'User'}</p>
-                <p style={{
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: 500,
-                  fontSize: '12px',
-                  lineHeight: '100%',
-                  color: '#1F2937',
-                  opacity: 0.7
-                }}>{user.position || 'Intern'}</p>
-              </div>
-            </div>
-          </div>
-        )}
         <div style={{ padding: "20px" }}>{children}</div>
       </main>
     </div>
@@ -127,8 +92,24 @@ function App() {
         />
 
         <Route
+          path="/peraturan"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="peraturan" setActiveTab={setActiveTab}>
+                <Peraturan />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/reset-password"
           element={<ResetPassword />}
+        />
+
+        <Route
+          path="/new-password/:token"
+          element={<NewPassword />}
         />
 
         {/* FALLBACK */}

@@ -1,10 +1,9 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import Webcam from "react-webcam";
+import React, { useState, useEffect } from "react";
 import { getTodayPresence, checkIn, checkOut, getPresences } from '../services/api';
+import CameraCapture from '../components/CameraCapture';
+import Modal from '../components/Modal';
 
 const Presensi = () => {
-  const webcamRef = useRef(null);
-  const [imgSrc, setImgSrc] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [type, setType] = useState(""); // 'in' atau 'out'
   const [absenIn, setAbsenIn] = useState("--:--");
@@ -15,6 +14,14 @@ const Presensi = () => {
   const [submitting, setSubmitting] = useState(false);
   const [todayPresence, setTodayPresence] = useState(null);
   const [presenceHistory, setPresenceHistory] = useState([]);
+  const [isHoveringAbsen, setIsHoveringAbsen] = useState(false);
+  const [modal, setModal] = useState({ 
+    isOpen: false, 
+    type: 'success', 
+    title: '', 
+    message: '',
+    customImage: null
+  });
 
   // Fetch today's presence on mount
   useEffect(() => {
@@ -42,14 +49,14 @@ const Presensi = () => {
       if (response.data.success && response.data.data) {
         const presence = response.data.data;
         setTodayPresence(presence);
-        
+
         // Set check-in time if exists
         if (presence.check_in) {
           const checkInTime = new Date(presence.check_in);
           setAbsenIn(checkInTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
           setLocationIn(presence.checkin_location || '-');
         }
-        
+
         // Set check-out time if exists
         if (presence.check_out) {
           const checkOutTime = new Date(presence.check_out);
@@ -64,105 +71,97 @@ const Presensi = () => {
     }
   };
 
-  const openCam = (mode) => {
+  const handleOpenCamera = (mode) => {
     setType(mode);
     setIsCameraOpen(true);
   };
 
-  const capture = useCallback(async () => {
-    setSubmitting(true);
-    const imageSrc = webcamRef.current.getScreenshot();
-    
-    if (type === "in") {
-      // Get current location
-      if (!navigator.geolocation) {
-        alert('Geolocation tidak didukung oleh browser Anda');
-        setSubmitting(false);
-        return;
-      }
+  const handleModalClose = () => {
+    setModal({ ...modal, isOpen: false });
+  };
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            // Convert base64 to blob
-            const blob = await fetch(imageSrc).then(r => r.blob());
-            const formData = new FormData();
-            formData.append('image', blob, 'checkin.jpg');
-            formData.append('latitude', position.coords.latitude.toString());
-            formData.append('longitude', position.coords.longitude.toString());
-            formData.append('location', 'Kantor Pusat Jakarta');
-            
-            const response = await checkIn(formData);
-            
-            if (response.data.success) {
-              const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+  const handleCameraCapture = async (photoBlob) => {
+    setIsCameraOpen(false);
+    setSubmitting(true);
+
+    // Get current location
+    if (!navigator.geolocation) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Geolocation Tidak Didukung',
+        message: 'Browser Anda tidak mendukung geolocation',
+        customImage: null
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const formData = new FormData();
+          formData.append('image', photoBlob, type === 'in' ? 'checkin.jpg' : 'checkout.jpg');
+          formData.append('latitude', position.coords.latitude.toString());
+          formData.append('longitude', position.coords.longitude.toString());
+          formData.append('location', 'Kantor Pusat Jakarta');
+
+          const apiCall = type === 'in' ? checkIn : checkOut;
+          const response = await apiCall(formData);
+
+          if (response.data.success) {
+            const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+            if (type === 'in') {
               setAbsenIn(time);
               setLocationIn('Kantor Pusat Jakarta');
-              setIsCameraOpen(false);
-              alert(`✅ ${response.data.message} jam ${time}`);
-              await fetchTodayPresence();
-              await fetchPresenceHistory();
-            }
-          } catch (error) {
-            console.error('Check-in error:', error);
-            const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan check-in';
-            alert(`❌ ${errorMsg}`);
-          } finally {
-            setSubmitting(false);
-          }
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          alert('❌ Gagal mendapatkan lokasi. Pastikan Anda mengizinkan akses lokasi.');
-          setSubmitting(false);
-        }
-      );
-    } else {
-      // Get current location for checkout
-      if (!navigator.geolocation) {
-        alert('Geolocation tidak didukung oleh browser Anda');
-        setSubmitting(false);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            // Convert base64 to blob
-            const blob = await fetch(imageSrc).then(r => r.blob());
-            const formData = new FormData();
-            formData.append('image', blob, 'checkout.jpg');
-            formData.append('latitude', position.coords.latitude.toString());
-            formData.append('longitude', position.coords.longitude.toString());
-            formData.append('location', 'Kantor Pusat Jakarta');
-            
-            const response = await checkOut(formData);
-            
-            if (response.data.success) {
-              const time = new Date().toLocaleTimeString('id-ID', { hour: "2-digit", minute: "2-digit" });
+            } else {
               setAbsenOut(time);
               setLocationOut('Kantor Pusat Jakarta');
-              setIsCameraOpen(false);
-              alert(`✅ ${response.data.message} jam ${time}`);
-              await fetchTodayPresence();
-              await fetchPresenceHistory();
             }
-          } catch (error) {
-            console.error('Check-out error:', error);
-            const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan check-out';
-            alert(`❌ ${errorMsg}`);
-          } finally {
-            setSubmitting(false);
+            setModal({
+              isOpen: true,
+              type: 'success',
+              title: type === 'in' ? 'Absen Masuk Berhasil!' : 'Absen Pulang Berhasil!',
+              message: `${response.data.message} pada ${time}`,
+              customImage: null
+            });
+            await fetchTodayPresence();
+            await fetchPresenceHistory();
           }
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          alert('❌ Gagal mendapatkan lokasi. Pastikan Anda mengizinkan akses lokasi.');
+        } catch (error) {
+          console.error('Check-in/out error:', error);
+          const errorMsg = error.response?.data?.message || 'Terjadi kesalahan saat melakukan presensi';
+          
+          // Check if error is about location being too far
+          const isLocationError = errorMsg.toLowerCase().includes('jangkauan') || 
+                                 errorMsg.toLowerCase().includes('jauh') ||
+                                 errorMsg.toLowerCase().includes('radius') ||
+                                 errorMsg.toLowerCase().includes('lokasi');
+          
+          setModal({
+            isOpen: true,
+            type: 'error',
+            title: isLocationError ? 'Lokasi di Luar Jangkauan' : 'Absensi Gagal',
+            message: errorMsg,
+            customImage: isLocationError ? '/images/absenJauh.png' : null
+          });
+        } finally {
           setSubmitting(false);
         }
-      );
-    }
-  }, [webcamRef, type]);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Gagal Mendapatkan Lokasi',
+          message: 'Gagal mendapatkan lokasi. Pastikan Anda mengizinkan akses lokasi.',
+          customImage: null
+        });
+        setSubmitting(false);
+      }
+    );
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -204,58 +203,141 @@ const Presensi = () => {
           <p style={{ marginTop: '15px', color: '#6B7280' }}>Memuat data presensi...</p>
         </div>
       ) : (
-        <div className="attendance-grid">
-          {/* ABSEN MASUK */}
-          <div className="absent-card">
-            <div className="ac-icon">
-              <i className="ri-sun-line"></i>
-            </div>
-            <div className="ac-title">Absen Masuk</div>
-            <div className="ac-clock">{absenIn}</div>
-            <div className="ac-loc">Lokasi: {locationIn}</div>
-            <button
-              className="btn-scan"
-              onClick={() => openCam("in")}
-              disabled={absenIn !== "--:--"}
-              style={{
-                background: absenIn === "--:--" ? '#1F2937' : '#E5E7EB',
-                color: absenIn === "--:--" ? 'white' : '#9CA3AF'
-              }}
-            >
-              {absenIn === "--:--" ? "Absen Masuk" : "Sudah Absen"}
-            </button>
-          </div>
+        <>
+          {/* Presensi Card */}
+          <div className="card" style={{ marginBottom: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '30px', marginBottom: '30px' }}>
+              {/* ABSEN MASUK */}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  margin: '0 auto 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#FFF7ED',
+                  borderRadius: '50%'
+                }}>
+                  <img
+                    src="/images/absenMasuk.png"
+                    alt="Jam Masuk"
+                    style={{ width: '39px', height: '39px', objectFit: 'contain' }}
+                  />
+                </div>
+                <div style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#64748B',
+                  marginBottom: '12px'
+                }}>
+                  Absen Masuk
+                </div>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: '#1F2937',
+                  marginBottom: '8px',
+                  letterSpacing: '1px'
+                }}>
+                  {absenIn}
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: '#9CA3AF',
+                  background: '#F3F4F6',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  display: 'inline-block'
+                }}>
+                  Lokasi: {locationIn}
+                </div>
+              </div>
 
-          {/* ABSEN PULANG */}
-          <div
-            className="absent-card"
-            style={{ opacity: absenIn === "--:--" ? 0.6 : 1 }}
-          >
-            <div
-              className="ac-icon"
-              style={{ 
-                background: absenIn !== "--:--" ? '#FFF7ED' : '#F3F4F6', 
-                color: absenIn !== "--:--" ? '#FF6B00' : '#9CA3AF' 
-              }}
-            >
-              <i className="ri-moon-line"></i>
+              {/* Divider */}
+              <div style={{ background: '#E5E7EB', width: '1px' }}></div>
+
+              {/* ABSEN PULANG */}
+              <div style={{ textAlign: 'center', opacity: absenIn === "--:--" ? 0.5 : 1 }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  margin: '0 auto 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#FFF7ED',
+                  borderRadius: '50%'
+                }}>
+                  <img
+                    src="/images/absenPulang.png"
+                    alt="Jam Pulang"
+                    style={{ width: '39px', height: '39px', objectFit: 'contain' }}
+                  />
+                </div>
+                <div style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#64748B',
+                  marginBottom: '12px'
+                }}>
+                  Absen Pulang
+                </div>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: '#1F2937',
+                  marginBottom: '8px',
+                  letterSpacing: '1px'
+                }}>
+                  {absenOut}
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: '#9CA3AF',
+                  background: '#F3F4F6',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  display: 'inline-block'
+                }}>
+                  Lokasi: {locationOut}
+                </div>
+              </div>
             </div>
-            <div className="ac-title">Absen Pulang</div>
-            <div className="ac-clock">{absenOut}</div>
-            <div className="ac-loc">Lokasi: {locationOut}</div>
+
+            {/* Button */}
             <button
-              className="btn-scan"
-              onClick={() => openCam("out")}
-              disabled={absenIn === "--:--" || absenOut !== "--:--"}
+              onClick={() => handleOpenCamera(absenIn === "--:--" ? "in" : "out")}
+              onMouseEnter={() => setIsHoveringAbsen(true)}
+              onMouseLeave={() => setIsHoveringAbsen(false)}
+              disabled={(absenIn !== "--:--" && absenOut !== "--:--") || submitting}
               style={{
-                background: (absenIn !== "--:--" && absenOut === "--:--") ? '#1F2937' : '#E5E7EB',
-                color: (absenIn !== "--:--" && absenOut === "--:--") ? 'white' : '#9CA3AF'
+                width: '100%',
+                maxWidth: '400px',
+                margin: '0 auto',
+                display: 'block',
+                padding: '14px',
+                borderRadius: '12px',
+                border: absenIn === "--:--" ? 'none' : (absenOut !== "--:--" || submitting) ? '2px solid #E5E7EB' : '2px solid #EF4444',
+                background: absenIn === "--:--" ? '#2C3E50' : (absenOut !== "--:--" || submitting) ? '#F3F4F6' : (isHoveringAbsen && absenOut === "--:--" ? '#FF0000' : 'white'),
+                color: absenIn === "--:--" ? 'white' : (absenOut !== "--:--" || submitting) ? '#9CA3AF' : (isHoveringAbsen && absenOut === "--:--" ? '#FFFFFF' : '#EF4444'),
+                fontSize: '15px',
+                fontWeight: '600',
+                cursor: (absenIn !== "--:--" && absenOut !== "--:--") || submitting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s'
               }}
             >
-              {absenOut === "--:--" ? "Absen Pulang" : "Sudah Absen"}
+              {submitting
+                ? "Memproses..."
+                : absenIn === "--:--"
+                  ? "Absen Masuk"
+                  : absenOut === "--:--"
+                    ? "Absen Pulang"
+                    : "Sudah Absen Hari Ini"
+              }
             </button>
           </div>
-        </div>
+        </>
       )}
 
       {/* RIWAYAT ABSENSI */}
@@ -295,63 +377,23 @@ const Presensi = () => {
         </div>
       </div>
 
-      {/* MODAL KAMERA */}
+      {/* Camera Capture Modal */}
       {isCameraOpen && (
-        <div className="modal-overlay open">
-          <div className="modal-content" style={{ textAlign: "center" }}>
-            <h3>Ambil Foto Presensi</h3>
-            <div
-              style={{
-                margin: "20px 0",
-                borderRadius: "12px",
-                overflow: "hidden",
-              }}
-            >
-              <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                videoConstraints={{ facingMode: "user" }}
-                style={{ width: "100%", transform: "scaleX(-1)" }}
-              />
-            </div>
-            <div
-              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
-            >
-              <button
-                className="btn-scan"
-                style={{ background: "var(--primary)", width: "auto" }}
-                onClick={capture}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <i className="ri-loader-4-line rotating"></i>
-                    Memproses...
-                  </>
-                ) : (
-                  <>
-                    <i className="ri-camera-fill"></i>
-                    Ambil Foto
-                  </>
-                )}
-              </button>
-              <button
-                className="btn-scan"
-                style={{
-                  background: "#E5E7EB",
-                  color: "#374151",
-                  width: "auto",
-                }}
-                onClick={() => setIsCameraOpen(false)}
-                disabled={submitting}
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setIsCameraOpen(false)}
+        />
       )}
+
+      {/* Success/Error Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={handleModalClose}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+        customImage={modal.customImage}
+      />
     </div>
   );
 };
