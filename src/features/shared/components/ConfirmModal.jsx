@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import styles from './Modal.module.css';
+import styles from '../styles/Modal.module.css';
 
-const ConfirmModal = ({ 
-    isOpen, 
-    onClose, 
-    onConfirm, 
-    title, 
-    message, 
+const ConfirmModal = ({
+    isOpen,
+    onClose,
+    onConfirm,
+    title,
+    message,
     subtitle,
-    confirmText = 'Ya, hapus', 
+    confirmText = 'Ya, hapus',
     cancelText = 'Batal',
     image,
     confirmButtonStyle = 'danger' // 'danger' or 'primary'
@@ -104,8 +104,8 @@ const ConfirmModal = ({
                             />
                         </motion.div>
 
-                        <motion.h2 
-                            className={styles.modalTitle} 
+                        <motion.h2
+                            className={styles.modalTitle}
                             variants={itemVariants}
                             style={{ fontSize: '18px', fontWeight: '600', marginTop: '20px' }}
                         >
@@ -113,8 +113,8 @@ const ConfirmModal = ({
                         </motion.h2>
 
                         {message && (
-                            <motion.p 
-                                className={styles.modalMessage} 
+                            <motion.p
+                                className={styles.modalMessage}
                                 variants={itemVariants}
                                 style={{ marginTop: '8px', color: '#666' }}
                             >
@@ -123,11 +123,11 @@ const ConfirmModal = ({
                         )}
 
                         {subtitle && (
-                            <motion.p 
+                            <motion.p
                                 variants={itemVariants}
-                                style={{ 
-                                    marginTop: '8px', 
-                                    fontSize: '13px', 
+                                style={{
+                                    marginTop: '8px',
+                                    fontSize: '13px',
                                     color: '#888',
                                     lineHeight: '1.5'
                                 }}
@@ -136,11 +136,11 @@ const ConfirmModal = ({
                             </motion.p>
                         )}
 
-                        <motion.div 
+                        <motion.div
                             variants={itemVariants}
-                            style={{ 
-                                display: 'flex', 
-                                gap: '12px', 
+                            style={{
+                                display: 'flex',
+                                gap: '12px',
                                 marginTop: '28px',
                                 width: '100%'
                             }}

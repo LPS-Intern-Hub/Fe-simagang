@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { verifyResetToken, resetPassword } from "../services/api";
-import Modal from "../components/Modal";
+import { verifyResetToken, resetPassword } from "../../../services/api";
+import Modal from "../../shared/components/Modal";
 import { motion } from "framer-motion";
 import styles from "../styles/Login.module.css";
 

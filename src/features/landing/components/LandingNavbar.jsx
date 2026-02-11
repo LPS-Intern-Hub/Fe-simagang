@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import styles from "../../styles/Landing.module.css";
+import styles from "../styles/Landing.module.css";
 
 const LandingNavbar = () => {
   const scrollToSection = (sectionId) => {

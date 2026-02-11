@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import styles from './Modal.module.css';
+import styles from '../styles/Modal.module.css';
 
 const Modal = ({ isOpen, onClose, type = 'success', title, message, buttonText = 'Tutup', customImage }) => {
     // Backdrop animation

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDashboard } from '../services/api';
+import { getDashboard } from '../../../services/api';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -75,35 +75,6 @@ const Dashboard = () => {
 
   return (
     <div className="section-view active">
-      {/* Greeting Section */}
-      <div style={{ marginBottom: '30px' }}>
-        <h2 style={{
-          fontFamily: 'Plus Jakarta Sans',
-          fontWeight: '800',
-          fontSize: '32px',
-          lineHeight: '100%',
-          letterSpacing: '0%',
-          color: '#1F2937',
-          marginBottom: '8px'
-        }}>
-          Hello, {userData?.name || 'John'}!
-        </h2>
-        <p style={{
-          fontFamily: 'Plus Jakarta Sans',
-          fontWeight: '400',
-          fontSize: '16px',
-          lineHeight: '100%',
-          letterSpacing: '0%',
-          color: '#9CA3AF',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }}>
-          <img src="/images/calender.png" alt="Calendar" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-          {formatDate(new Date().toISOString())}
-        </p>
-      </div>
-
       {/* Progress Magang Card */}
       <div className="progress-card-white">
         <h2 className="progress-title">Progress Magang</h2>
@@ -134,7 +105,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
         {/* Kartu Hadir Bulan Ini */}
         <div className="dashboard-stat-card">
           <div className="stat-icon-box" style={{ background: '#ECFDF5' }}>

@@ -5,9 +5,9 @@ import {
   updateLogbook,
   deleteLogbook,
   getPresences
-} from "../services/api";
-import Modal from "../components/Modal";
-import ConfirmModal from "../components/ConfirmModal";
+} from "../../../services/api";
+import Modal from "../../shared/components/Modal";
+import ConfirmModal from "../../shared/components/ConfirmModal";
 import "remixicon/fonts/remixicon.css";
 
 const Logbook = () => {
@@ -42,7 +42,7 @@ const Logbook = () => {
   const fetchLogbooks = async () => {
     try {
       setLoading(true);
-      const response = await getLogbooks();
+      const response = await getLogbooks({ limit: 1000 }); // Get all logbooks
       console.log('Logbook response:', response);
       console.log('Logbook data:', response.data);
       const logbookData = response.data.data || [];
@@ -71,18 +71,18 @@ const Logbook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setValidationError('');
-    
+
     // Validate minimum length
     if (formData.activity_detail.trim().length < 10) {
       setValidationError('Kegiatan harus minimal 10 karakter');
       return;
     }
-    
+
     if (formData.result_output.trim().length < 10) {
       setValidationError('Output kegiatan harus minimal 10 karakter');
       return;
     }
-    
+
     try {
       const payload = {
         date: formData.date,
@@ -167,7 +167,7 @@ const Logbook = () => {
   const submitToMentor = async () => {
     setShowSubmitModal(false);
     const draftLogbooks = logbooks.filter(l => l.status === 'draft');
-    
+
     try {
       for (const logbook of draftLogbooks) {
         await updateLogbook(logbook.id_logbooks, { ...logbook, status: 'sent' });
@@ -219,45 +219,46 @@ const Logbook = () => {
   // Group logbooks by status and month
   const draftLogbooks = logbooks.filter(l => l.status === 'draft');
   const approvedLogbooks = logbooks.filter(l => l.status === 'approved');
-  const sentLogbooks = logbooks.filter(l => l.status === 'sent' || l.status === 'reviewed' || l.status === 'approved_by_mentor');
-  
+  const sentLogbooks = logbooks.filter(l => l.status === 'sent' || l.status === 'review_kadiv');
+  // Logbooks shown in draft table: draft + sent + review_kadiv + rejected
+  const tableLogbooks = logbooks.filter(l => l.status !== 'approved');
+
   // Get the most recent sent/in-progress logbook to display progress
   const inProgressLogbook = sentLogbooks.length > 0 ? sentLogbooks[0] : null;
-  
-  // Group draft by week (Monday-Friday only)
-  const draftsByWeek = draftLogbooks.reduce((acc, logbook) => {
+
+  // Group table logbooks by week (Monday-Friday)
+  const draftsByWeek = tableLogbooks.reduce((acc, logbook) => {
     const logbookDate = new Date(logbook.date);
-    const dayOfWeek = logbookDate.getDay();
-    
-    // Include all days (remove weekend restriction for now)
-    // Skip weekends (0 = Sunday, 6 = Saturday)
-    // if (dayOfWeek === 0 || dayOfWeek === 6) return acc;
-    
     const monday = getMonday(logbookDate);
     const weekKey = monday.toISOString().split('T')[0];
     if (!acc[weekKey]) acc[weekKey] = [];
     acc[weekKey].push(logbook);
     return acc;
   }, {});
-  
+
   console.log('Draft logbooks:', draftLogbooks);
   console.log('Drafts by week:', draftsByWeek);
-  
+
   // Sort each week's logbooks by date
   Object.keys(draftsByWeek).forEach(weekKey => {
     draftsByWeek[weekKey].sort((a, b) => new Date(a.date) - new Date(b.date));
   });
-  
-  // Get sorted week keys (most recent first)
-  const weekKeys = Object.keys(draftsByWeek).sort((a, b) => new Date(b) - new Date(a));
-  const currentWeekKey = weekKeys[currentWeek];
-  const currentWeekLogbooks = currentWeekKey ? draftsByWeek[currentWeekKey] : [];
+
+  // Get sorted week keys (oldest first, so pagination 1 = earliest week)
+  const weekKeys = Object.keys(draftsByWeek).sort((a, b) => new Date(a) - new Date(b));
+  const totalPages = weekKeys.length;
   
   console.log('Week keys:', weekKeys);
-  console.log('Current week:', currentWeek);
+  console.log('Total pages (weeks):', totalPages);
+  console.log('Current page:', currentWeek + 1);
+
+  // Get current week data
+  const currentWeekKey = weekKeys[currentWeek];
+  const currentWeekLogbooks = currentWeekKey ? draftsByWeek[currentWeekKey] : [];
+
   console.log('Current week key:', currentWeekKey);
   console.log('Current week logbooks:', currentWeekLogbooks);
-  
+
   // Group current week logbooks by date
   const logbooksByDate = currentWeekLogbooks.reduce((acc, logbook) => {
     const dateKey = new Date(logbook.date).toISOString().split('T')[0];
@@ -265,10 +266,10 @@ const Logbook = () => {
     acc[dateKey].push(logbook);
     return acc;
   }, {});
-  
+
   // Get sorted dates for current week
   const sortedDates = Object.keys(logbooksByDate).sort((a, b) => new Date(a) - new Date(b));
-  
+
   // Group approved by month
   const groupedByMonth = approvedLogbooks.reduce((acc, logbook) => {
     const monthYear = formatMonth(logbook.date);
@@ -289,7 +290,7 @@ const Logbook = () => {
   }
 
   return (
-    <div className="section-view active">
+    <div className="section-view active logbook-page">
       <h2 className="page-title" style={{ marginBottom: '25px' }}>Logbook Harian</h2>
 
       {error && (
@@ -394,205 +395,20 @@ const Logbook = () => {
         </form>
       </div>
 
-      {/* Draft Logbooks Table */}
-      {draftLogbooks.length === 0 ? (
-        <div className="card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px', color: '#999' }}>
-          <i className="ri-file-list-line" style={{ fontSize: '48px', marginBottom: '16px', display: 'block', color: '#ddd' }}></i>
-          <p style={{ fontSize: '16px', fontWeight: '500' }}>Belum ada draft logbook</p>
-          <p style={{ fontSize: '14px' }}>Buat logbook baru dengan mengisi form di atas</p>
-        </div>
-      ) : currentWeekLogbooks.length > 0 ? (
-        <div className="card" style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px' }}>
-              Draft: {currentWeekLogbooks[0] && formatMonth(currentWeekLogbooks[0].date)}
-            </h3>
-            <button
-              onClick={handleSubmitClick}
-              style={{
-                background: '#FF6B00',
-                color: '#fff',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '50px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <i className="ri-send-plane-fill"></i> Ajukan ke Mentor
-            </button>
-          </div>
-
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
-                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '100px' }}>TANGGAL</th>
-                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '60px' }}>NO</th>
-                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>KEGIATAN</th>
-                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>OUTPUT</th>
-                  <th style={{ textAlign: 'right', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '80px' }}>AKSI</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedDates.map((dateKey, dateIndex) => {
-                  const logbooksOnDate = logbooksByDate[dateKey];
-                  return (
-                    <tr key={dateKey} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                      <td style={{ padding: '16px 12px', fontSize: '14px', whiteSpace: 'nowrap', verticalAlign: 'top', color: '#333', fontWeight: '500' }}>
-                        {formatDateShort(dateKey)}
-                      </td>
-                      <td style={{ padding: '16px 12px', fontSize: '14px', verticalAlign: 'top', color: '#666' }}>
-                        {dateIndex + 1}
-                      </td>
-                      <td style={{ padding: '16px 12px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top', lineHeight: '1.6' }}>
-                        <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
-                          {logbooksOnDate.map(logbook => (
-                            <li key={logbook.id_logbooks} style={{ marginBottom: '6px', color: '#333' }}>
-                              {logbook.activity_detail}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                      <td style={{ padding: '16px 12px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top', lineHeight: '1.6' }}>
-                        <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
-                          {logbooksOnDate.map(logbook => (
-                            <li key={logbook.id_logbooks} style={{ marginBottom: '6px', color: '#333' }}>
-                              {logbook.result_output}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                      <td style={{ padding: '16px 12px', textAlign: 'right', verticalAlign: 'top' }}>
-                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          {logbooksOnDate.map(logbook => (
-                            <div key={logbook.id_logbooks} style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                              <button
-                                onClick={() => handleEdit(logbook)}
-                                style={{
-                                  background: 'transparent',
-                                  color: '#1976D2',
-                                  border: 'none',
-                                  padding: '4px',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  fontSize: '18px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  transition: 'all 0.2s',
-                                  opacity: 1
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                                title="Edit"
-                              >
-                                <i className="ri-edit-line"></i>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(logbook.id_logbooks)}
-                                style={{
-                                  background: 'transparent',
-                                  color: '#C62828',
-                                  border: 'none',
-                                  padding: '4px',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  fontSize: '18px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  transition: 'all 0.2s',
-                                  opacity: 1
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                                title="Hapus"
-                              >
-                                <i className="ri-delete-bin-line"></i>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
-            <button 
-              onClick={() => setCurrentWeek(prev => Math.min(prev + 1, weekKeys.length - 1))}
-              disabled={currentWeek >= weekKeys.length - 1}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: currentWeek >= weekKeys.length - 1 ? '#ccc' : '#666',
-                fontSize: '24px',
-                cursor: currentWeek >= weekKeys.length - 1 ? 'not-allowed' : 'pointer',
-                padding: '4px 8px'
-              }}
-            >
-              ‹
-            </button>
-            <button style={{
-              background: '#FF6B00',
-              color: '#fff',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '50%',
-              fontWeight: '600',
-              fontSize: '14px',
-              cursor: 'default',
-              minWidth: '40px',
-              height: '40px'
-            }}>
-              {currentWeek + 1}
-            </button>
-            <button 
-              onClick={() => setCurrentWeek(prev => Math.max(prev - 1, 0))}
-              disabled={currentWeek <= 0}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: currentWeek <= 0 ? '#ccc' : '#666',
-                fontSize: '24px',
-                cursor: currentWeek <= 0 ? 'not-allowed' : 'pointer',
-                padding: '4px 8px'
-              }}
-            >
-              ›
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px', color: '#999' }}>
-          <i className="ri-file-list-line" style={{ fontSize: '48px', marginBottom: '16px', display: 'block', color: '#ddd' }}></i>
-          <p style={{ fontSize: '16px', fontWeight: '500' }}>Tidak ada draft untuk minggu yang dipilih</p>
-          <p style={{ fontSize: '14px' }}>Navigasi ke minggu lain atau buat logbook baru</p>
-        </div>
-      )}
-
       {/* Progress Tracking Card */}
       {inProgressLogbook && (
         <div className="card" style={{ marginBottom: '20px' }}>
           <h3 style={{ marginBottom: '24px', fontWeight: '600', fontSize: '16px', color: '#333' }}>
             Laporan Logbook: {formatMonth(inProgressLogbook.date)}
           </h3>
-          
+
           <div style={{ position: 'relative', marginBottom: '40px' }}>
             {/* Background progress line */}
-            <div style={{ 
-              position: 'absolute', 
-              left: '20px', 
-              right: '20px', 
-              top: '20px', 
+            <div style={{
+              position: 'absolute',
+              left: '20px',
+              right: '20px',
+              top: '20px',
               height: '2px',
               display: 'flex',
               zIndex: 1
@@ -600,12 +416,11 @@ const Logbook = () => {
               {[0, 1, 2].map((lineIndex) => {
                 const currentStatus = inProgressLogbook.status;
                 let isCompleted = false;
-                
+
                 // Line 0 is between step 1 and 2, Line 1 is between step 2 and 3, Line 2 is between step 3 and 4
-                if (currentStatus === 'reviewed' && lineIndex === 0) isCompleted = true;
-                else if (currentStatus === 'approved_by_mentor' && lineIndex <= 1) isCompleted = true;
+                if (currentStatus === 'review_kadiv' && lineIndex === 0) isCompleted = true;
                 else if (currentStatus === 'approved' && lineIndex <= 2) isCompleted = true;
-                
+
                 return (
                   <div key={lineIndex} style={{
                     flex: 1,
@@ -615,43 +430,42 @@ const Logbook = () => {
                 );
               })}
             </div>
-            
+
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               {/* Progress steps */}
               {[
                 { label: 'Terkirim', status: 'sent', number: 1 },
-                { label: 'Review Mentor', status: 'reviewed', number: 2 },
-                { label: 'Ka. Divisi', status: 'approved_by_mentor', number: 3 },
+                { label: 'Review Mentor', status: 'sent', number: 2 },
+                { label: 'Ka. Divisi', status: 'review_kadiv', number: 3 },
                 { label: 'Selesai', status: 'approved', number: 4 }
               ].map((step, index) => {
                 // Determine step state
                 let stepState = 'pending';
                 const currentStatus = inProgressLogbook.status;
-                
+
                 if (currentStatus === 'sent') {
                   if (index === 0) stepState = 'completed';
                   else if (index === 1) stepState = 'current';
-                } else if (currentStatus === 'reviewed') {
+                } else if (currentStatus === 'review_kadiv') {
                   if (index <= 1) stepState = 'completed';
                   else if (index === 2) stepState = 'current';
-                } else if (currentStatus === 'approved_by_mentor') {
-                  if (index <= 2) stepState = 'completed';
-                  else if (index === 3) stepState = 'current';
                 } else if (currentStatus === 'approved') {
                   stepState = 'completed';
+                } else if (currentStatus === 'rejected') {
+                  stepState = 'pending';
                 }
-                
+
                 return (
-                  <div key={step.status} style={{ 
+                  <div key={step.status} style={{
                     width: '25%',
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                    display: 'flex',
+                    flexDirection: 'column',
                     alignItems: index === 0 ? 'flex-start' : index === 3 ? 'flex-end' : 'center',
                     position: 'relative',
                     zIndex: 2
                   }}>
                     {/* Circle */}
-                    <div style={{
+                    <div className="logbook-progress-circle" style={{
                       width: '40px',
                       height: '40px',
                       borderRadius: '50%',
@@ -674,9 +488,9 @@ const Logbook = () => {
                         step.number
                       )}
                     </div>
-                    
+
                     {/* Label */}
-                    <div style={{
+                    <div className="logbook-progress-label" style={{
                       fontSize: '12px',
                       fontWeight: '500',
                       color: stepState === 'pending' ? '#999' : '#333',
@@ -686,16 +500,16 @@ const Logbook = () => {
                     }}>
                       {step.label}
                     </div>
-                    
+
                     {/* Date or Status */}
-                    <div style={{
+                    <div className="logbook-progress-sublabel" style={{
                       fontSize: '11px',
                       color: stepState === 'current' ? '#FF6B00' : '#999',
                       textAlign: 'center',
                       whiteSpace: 'nowrap'
                     }}>
-                      {stepState === 'completed' && inProgressLogbook.date ? 
-                        new Date(inProgressLogbook.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }) 
+                      {stepState === 'completed' && inProgressLogbook.date ?
+                        new Date(inProgressLogbook.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })
                         : stepState === 'current' ? 'Sedang di review' : ''}
                     </div>
                   </div>
@@ -703,7 +517,7 @@ const Logbook = () => {
               })}
             </div>
           </div>
-          
+
           {/* Status Info */}
           <div style={{
             padding: '14px 16px',
@@ -728,22 +542,383 @@ const Logbook = () => {
             <div>
               <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '2px' }}>
                 {inProgressLogbook.status === 'sent' && 'Menunggu Review Mentor'}
-                {inProgressLogbook.status === 'reviewed' && 'Menunggu Review Ka. Divisi'}
-                {inProgressLogbook.status === 'approved_by_mentor' && 'Menunggu Persetujuan Final'}
+                {inProgressLogbook.status === 'review_kadiv' && 'Menunggu Review Ka. Divisi'}
               </div>
               <div style={{ fontSize: '12px', color: '#666' }}>
                 {inProgressLogbook.status === 'sent' && 'Mohon tunggu, logbook sedang diperiksa oleh Mentor.'}
-                {inProgressLogbook.status === 'reviewed' && 'Mohon tunggu, logbook sedang diperiksa oleh Ka. Divisi.'}
-                {inProgressLogbook.status === 'approved_by_mentor' && 'Mohon tunggu, logbook dalam proses persetujuan akhir.'}
+                {inProgressLogbook.status === 'review_kadiv' && 'Mohon tunggu, logbook sedang diperiksa oleh Ka. Divisi.'}
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Draft Logbooks Table */}
+      {tableLogbooks.length === 0 ? (
+        <div className="card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px', color: '#999' }}>
+          <i className="ri-file-list-line" style={{ fontSize: '48px', marginBottom: '16px', display: 'block', color: '#ddd' }}></i>
+          <p style={{ fontSize: '16px', fontWeight: '500' }}>Belum ada draft logbook</p>
+          <p style={{ fontSize: '14px' }}>Buat logbook baru dengan mengisi form di atas</p>
+        </div>
+      ) : currentWeekLogbooks.length > 0 ? (
+        <div className="card" style={{ marginBottom: '20px' }}>
+          <div className="logbook-draft-header">
+            <div className="logbook-draft-title" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px' }}>
+                Draft: {currentWeekLogbooks[0] && formatMonth(currentWeekLogbooks[0].date)}
+              </h3>
+              {currentWeekLogbooks.some(log => log.rejection_reason) && (
+                <span style={{
+                  padding: '4px 12px',
+                  background: '#FEE2E2',
+                  color: '#991B1B',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  <i className="ri-error-warning-line" style={{ marginRight: '4px' }}></i>
+                  Ada yang ditolak
+                </span>
+              )}
+            </div>
+            {draftLogbooks.length > 0 && (
+              <button
+                className="logbook-submit-btn"
+                onClick={handleSubmitClick}
+                style={{
+                  background: '#FF6B00',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '50px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <i className="ri-send-plane-fill"></i> Ajukan ke Mentor
+              </button>
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="logbook-table-desktop" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '100px' }}>TANGGAL</th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '60px' }}>NO</th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>KEGIATAN</th>
+                  <th style={{ textAlign: 'left', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase' }}>OUTPUT</th>
+                  <th style={{ textAlign: 'right', padding: '16px 12px', fontWeight: '600', fontSize: '12px', color: '#666', textTransform: 'uppercase', width: '80px' }}>AKSI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedDates.map((dateKey, dateIndex) => {
+                  const logbooksOnDate = logbooksByDate[dateKey];
+                  const hasRejection = logbooksOnDate.some(log => log.rejection_reason);
+                  const isSent = logbooksOnDate.some(log => log.status === 'sent' || log.status === 'review_kadiv');
+                  return (
+                    <>
+                    <tr key={dateKey} style={{ borderBottom: hasRejection ? 'none' : '1px solid #f0f0f0', background: hasRejection ? '#FEF2F2' : 'white' }}>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', whiteSpace: 'nowrap', verticalAlign: 'top', color: '#333', fontWeight: '500' }}>
+                        <div>{formatDateShort(dateKey)}</div>
+                        {isSent && (
+                          <span style={{
+                            display: 'inline-block',
+                            marginTop: '4px',
+                            padding: '2px 8px',
+                            background: '#F3F4F6',
+                            color: '#6B7280',
+                            borderRadius: '10px',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px'
+                          }}>
+                            Diajukan
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', verticalAlign: 'top', color: '#666' }}>
+                        {dateIndex + 1}
+                      </td>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top', lineHeight: '1.6' }}>
+                        <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
+                          {logbooksOnDate.map(logbook => (
+                            <li key={logbook.id_logbooks} style={{ marginBottom: '6px', color: '#333' }}>
+                              {logbook.activity_detail}
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td style={{ padding: '16px 12px', fontSize: '14px', maxWidth: '400px', wordBreak: 'break-word', verticalAlign: 'top', lineHeight: '1.6' }}>
+                        <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
+                          {logbooksOnDate.map(logbook => (
+                            <li key={logbook.id_logbooks} style={{ marginBottom: '6px', color: '#333' }}>
+                              {logbook.result_output}
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td style={{ padding: '16px 12px', textAlign: 'right', verticalAlign: 'top' }}>
+                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', flexDirection: 'column', alignItems: 'flex-end' }}>
+                          {logbooksOnDate.map(logbook => {
+                            const isDraft = logbook.status === 'draft' || logbook.status === 'rejected';
+                            return (
+                            <div key={logbook.id_logbooks} style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => isDraft && handleEdit(logbook)}
+                                disabled={!isDraft}
+                                style={{
+                                  background: 'transparent',
+                                  color: isDraft ? '#1976D2' : '#ccc',
+                                  border: 'none',
+                                  padding: '4px',
+                                  borderRadius: '4px',
+                                  cursor: isDraft ? 'pointer' : 'not-allowed',
+                                  fontSize: '18px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s',
+                                  opacity: 1
+                                }}
+                                onMouseEnter={(e) => isDraft && (e.currentTarget.style.opacity = '0.7')}
+                                onMouseLeave={(e) => isDraft && (e.currentTarget.style.opacity = '1')}
+                                title={isDraft ? 'Edit' : 'Tidak bisa diedit (sudah diajukan)'}
+                              >
+                                <i className="ri-edit-line"></i>
+                              </button>
+                              <button
+                                onClick={() => isDraft && handleDelete(logbook.id_logbooks)}
+                                disabled={!isDraft}
+                                style={{
+                                  background: 'transparent',
+                                  color: isDraft ? '#C62828' : '#ccc',
+                                  border: 'none',
+                                  padding: '4px',
+                                  borderRadius: '4px',
+                                  cursor: isDraft ? 'pointer' : 'not-allowed',
+                                  fontSize: '18px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s',
+                                  opacity: 1
+                                }}
+                                onMouseEnter={(e) => isDraft && (e.currentTarget.style.opacity = '0.7')}
+                                onMouseLeave={(e) => isDraft && (e.currentTarget.style.opacity = '1')}
+                                title={isDraft ? 'Hapus' : 'Tidak bisa dihapus (sudah diajukan)'}
+                              >
+                                <i className="ri-delete-bin-line"></i>
+                              </button>
+                            </div>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                    {/* Rejection Warning Row */}
+                    {hasRejection && (
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td colSpan="5" style={{ padding: '12px', background: '#FEF2F2' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            <div style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              background: '#FEE2E2',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0
+                            }}>
+                              <i className="ri-error-warning-line" style={{ fontSize: '16px', color: '#DC2626' }}></i>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: '12px', fontWeight: '700', color: '#991B1B', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Alasan Penolakan
+                              </div>
+                              {logbooksOnDate.filter(log => log.rejection_reason).map(log => (
+                                <div key={log.id_logbooks} style={{ fontSize: '13px', color: '#7F1D1D', marginBottom: '6px', lineHeight: '1.5' }}>
+                                  • {log.rejection_reason}
+                                </div>
+                              ))}
+                              <div style={{ fontSize: '11px', color: '#991B1B', marginTop: '6px', fontStyle: 'italic' }}>
+                                💡 Silakan edit logbook di atas dan ajukan kembali setelah diperbaiki
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="logbook-mobile-cards">
+            {sortedDates.map((dateKey, dateIndex) => {
+              const logbooksOnDate = logbooksByDate[dateKey];
+              const hasRejection = logbooksOnDate.some(log => log.rejection_reason);
+              const isSent = logbooksOnDate.some(log => log.status === 'sent' || log.status === 'review_kadiv');
+              return (
+                <div key={dateKey} className={`logbook-mobile-card ${hasRejection ? 'rejected' : ''}`}>
+                  <div className="logbook-mobile-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="logbook-mobile-card-date">{formatDateShort(dateKey)}</span>
+                      {isSent && (
+                        <span style={{ padding: '2px 8px', background: '#F3F4F6', color: '#6B7280', borderRadius: '10px', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Diajukan</span>
+                      )}
+                    </div>
+                    <div className="logbook-mobile-card-actions">
+                      {logbooksOnDate.map(logbook => {
+                        const isDraft = logbook.status === 'draft' || logbook.status === 'rejected';
+                        return (
+                          <div key={logbook.id_logbooks} style={{ display: 'flex', gap: '4px' }}>
+                            <button onClick={() => isDraft && handleEdit(logbook)} disabled={!isDraft}
+                              style={{ background: 'transparent', color: isDraft ? '#1976D2' : '#ccc', border: 'none', padding: '4px', borderRadius: '4px', cursor: isDraft ? 'pointer' : 'not-allowed', fontSize: '18px' }}>
+                              <i className="ri-edit-line"></i>
+                            </button>
+                            <button onClick={() => isDraft && handleDelete(logbook.id_logbooks)} disabled={!isDraft}
+                              style={{ background: 'transparent', color: isDraft ? '#C62828' : '#ccc', border: 'none', padding: '4px', borderRadius: '4px', cursor: isDraft ? 'pointer' : 'not-allowed', fontSize: '18px' }}>
+                              <i className="ri-delete-bin-line"></i>
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {logbooksOnDate.map(logbook => (
+                    <div key={logbook.id_logbooks} style={{ marginBottom: '8px' }}>
+                      <div className="logbook-mobile-card-section">
+                        <div className="logbook-mobile-card-label">Kegiatan</div>
+                        <div className="logbook-mobile-card-value">{logbook.activity_detail}</div>
+                      </div>
+                      <div className="logbook-mobile-card-section">
+                        <div className="logbook-mobile-card-label">Output</div>
+                        <div className="logbook-mobile-card-value">{logbook.result_output}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {hasRejection && (
+                    <div style={{ marginTop: '8px', padding: '10px', background: '#FEE2E2', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#991B1B', marginBottom: '4px', textTransform: 'uppercase' }}>Alasan Penolakan</div>
+                      {logbooksOnDate.filter(log => log.rejection_reason).map(log => (
+                        <div key={log.id_logbooks} style={{ fontSize: '12px', color: '#7F1D1D', lineHeight: '1.5' }}>• {log.rejection_reason}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setCurrentWeek(prev => Math.max(prev - 1, 0))}
+              disabled={currentWeek <= 0}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: currentWeek <= 0 ? '#ccc' : '#666',
+                fontSize: '24px',
+                cursor: currentWeek <= 0 ? 'not-allowed' : 'pointer',
+                padding: '4px 8px'
+              }}
+            >
+              ‹
+            </button>
+            
+            {(() => {
+              const maxVisible = 6;
+              let startPage = 0;
+              let endPage = Math.min(totalPages, maxVisible);
+              
+              // Calculate range based on current page
+              if (totalPages > maxVisible) {
+                // Find which group of 6 the current page belongs to
+                const groupIndex = Math.floor(currentWeek / maxVisible);
+                startPage = groupIndex * maxVisible;
+                endPage = Math.min(startPage + maxVisible, totalPages);
+              }
+              
+              return Array.from({ length: endPage - startPage }, (_, i) => {
+                const pageIndex = startPage + i;
+                return (
+                  <button
+                    key={pageIndex}
+                    className="logbook-pagination-btn"
+                    onClick={() => setCurrentWeek(pageIndex)}
+                    style={{
+                      background: pageIndex === currentWeek ? '#FF6B00' : '#fff',
+                      color: pageIndex === currentWeek ? '#fff' : '#666',
+                      border: pageIndex === currentWeek ? 'none' : '1px solid #E5E7EB',
+                      padding: '8px 16px',
+                      borderRadius: '50%',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      minWidth: '40px',
+                      height: '40px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (pageIndex !== currentWeek) {
+                        e.currentTarget.style.background = '#F9FAFB';
+                        e.currentTarget.style.borderColor = '#FF6B00';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (pageIndex !== currentWeek) {
+                        e.currentTarget.style.background = '#fff';
+                        e.currentTarget.style.borderColor = '#E5E7EB';
+                      }
+                    }}
+                  >
+                    {pageIndex + 1}
+                  </button>
+                );
+              });
+            })()}
+            
+            <button
+              onClick={() => setCurrentWeek(prev => Math.min(prev + 1, totalPages - 1))}
+              disabled={currentWeek >= totalPages - 1}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: currentWeek >= totalPages - 1 ? '#ccc' : '#666',
+                fontSize: '24px',
+                cursor: currentWeek >= totalPages - 1 ? 'not-allowed' : 'pointer',
+                padding: '4px 8px'
+              }}
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="card" style={{ marginBottom: '20px', textAlign: 'center', padding: '40px', color: '#999' }}>
+          <i className="ri-file-list-line" style={{ fontSize: '48px', marginBottom: '16px', display: 'block', color: '#ddd' }}></i>
+          <p style={{ fontSize: '16px', fontWeight: '500' }}>Tidak ada draft untuk minggu yang dipilih</p>
+          <p style={{ fontSize: '14px' }}>Navigasi ke minggu lain atau buat logbook baru</p>
+        </div>
+      )}
+
       {/* Arsip Logbook Bulanan */}
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
           <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px' }}>Arsip logbook bulanan</h3>
           <select style={{
             padding: '8px 16px',
@@ -768,6 +943,7 @@ const Logbook = () => {
             {Object.entries(groupedByMonth).map(([month, logs]) => (
               <div
                 key={month}
+                className="logbook-archive-item"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -988,10 +1164,10 @@ const Logbook = () => {
         onClose={() => setShowSubmitModal(false)}
         onConfirm={submitToMentor}
         title="Ajukan logbook ke mentor?"
-        subtitle={`Anda akan mengajukan ${draftLogbooks.length} logbook draft ke mentor untuk disetujui.`}
+        subtitle={`Anda akan mengajukan ${draftLogbooks.length} logbook draft ke mentor untuk ditinjau.`}
         confirmText="Ya, ajukan"
         cancelText="Batal"
-        image="/images/absenMasuk.png"
+        image="/images/submit-logbook.svg"
         confirmButtonStyle="primary"
       />
 

@@ -36,6 +36,9 @@ export const logout = () => api.post('/auth/logout');
 export const requestPasswordReset = (email) => api.post('/auth/forgot-password', { email });
 export const verifyResetToken = (token) => api.get(`/auth/verify-reset-token/${token}`);
 export const resetPassword = (token, newPassword) => api.post('/auth/reset-password', { token, newPassword });
+export const getProfile = () => api.get('/auth/me');
+export const changePassword = (data) => api.put('/auth/change-password', data);
+export const updateProfile = (data) => api.put('/auth/update-profile', data);
 
 
 // --- PERMISSION (PERIZINAN) APIs ---
@@ -78,5 +81,14 @@ export const createLogbook = (data) => api.post('/logbooks', data);
 export const updateLogbook = (id, data) => api.put(`/logbooks/${id}`, data);
 export const deleteLogbook = (id) => api.delete(`/logbooks/${id}`);
 export const getLogbookStats = () => api.get('/logbooks/stats');
+
+// --- INTERNSHIP APIs ---
+export const getMentorInternships = () => api.get('/internships/mentor');
+
+// --- MENTOR APIs ---
+export const reviewLogbook = (id, action, rejection_reason = null) => 
+  api.put(`/logbooks/${id}/review`, { action, rejection_reason });
+export const reviewPermission = (id, action, rejection_reason = null) => 
+  api.put(`/permissions/${id}/review`, { action, rejection_reason });
 
 export default api;

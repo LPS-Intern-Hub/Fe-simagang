@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { getTodayPresence, checkIn, checkOut, getPresences } from '../services/api';
+import { getTodayPresence, checkIn, checkOut, getPresences } from '../../../services/api';
 import CameraCapture from '../components/CameraCapture';
-import Modal from '../components/Modal';
+import Modal from '../../shared/components/Modal';
 
 const Presensi = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -267,14 +267,14 @@ const Presensi = () => {
   return (
     <div className="section-view active">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
+      <div className="presensi-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
         <div>
           <h2 className="page-title">Presensi Kehadiran</h2>
           <p className="page-subtitle">
             Jangan lupa check-in dan check-out
           </p>
         </div>
-        <div style={{ textAlign: 'right', color: '#6B7280', fontSize: '14px' }}>
+        <div className="presensi-date" style={{ textAlign: 'right', color: '#6B7280', fontSize: '14px' }}>
           {getCurrentDate()}
         </div>
       </div>
@@ -288,10 +288,10 @@ const Presensi = () => {
         <>
           {/* Presensi Card */}
           <div className="card" style={{ marginBottom: '30px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '30px', marginBottom: '30px' }}>
+            <div className="presensi-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '30px', marginBottom: '30px' }}>
               {/* ABSEN MASUK */}
               <div style={{ textAlign: 'center' }}>
-                <div style={{
+                <div className="presensi-icon-circle" style={{
                   width: '80px',
                   height: '80px',
                   margin: '0 auto 20px',
@@ -315,7 +315,7 @@ const Presensi = () => {
                 }}>
                   Absen Masuk
                 </div>
-                <div style={{
+                <div className="presensi-time" style={{
                   fontSize: '32px',
                   fontWeight: '800',
                   color: '#1F2937',
@@ -337,11 +337,11 @@ const Presensi = () => {
               </div>
 
               {/* Divider */}
-              <div style={{ background: '#E5E7EB', width: '1px' }}></div>
+              <div className="presensi-divider" style={{ background: '#E5E7EB', width: '1px' }}></div>
 
               {/* ABSEN PULANG */}
               <div style={{ textAlign: 'center', opacity: absenIn === "--:--" ? 0.5 : 1 }}>
-                <div style={{
+                <div className="presensi-icon-circle" style={{
                   width: '80px',
                   height: '80px',
                   margin: '0 auto 20px',
@@ -365,7 +365,7 @@ const Presensi = () => {
                 }}>
                   Absen Pulang
                 </div>
-                <div style={{
+                <div className="presensi-time" style={{
                   fontSize: '32px',
                   fontWeight: '800',
                   color: '#1F2937',

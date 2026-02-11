@@ -52,6 +52,218 @@ aside {
     border-radius: 0 20px 20px 0;
 }
 
+/* Mobile Top Bar — hidden on desktop */
+.mobile-topbar {
+    display: none;
+}
+
+/* Mobile Drawer Header — hidden on desktop */
+.sidebar-mobile-header {
+    display: none;
+}
+
+.sidebar-close-btn {
+    display: none;
+}
+
+.sidebar-overlay {
+    display: none;
+}
+
+/* Desktop brand is visible by default */
+.sidebar-desktop-brand {
+    display: flex;
+}
+
+@media (max-width: 576px) {
+    /* ── Mobile Top Bar ── */
+    .mobile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: #fff;
+        border-bottom: 1px solid #F3F4F6;
+        padding: 0 16px;
+        z-index: 200;
+    }
+
+    .mobile-topbar-menu {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #1F2937;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-topbar-menu:active {
+        background: #F3F4F6;
+    }
+
+    .mobile-topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-topbar-logo {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+
+    .mobile-topbar-title {
+        font-weight: 800;
+        font-size: 16px;
+        color: #1F2937;
+        letter-spacing: -0.3px;
+    }
+
+    .mobile-topbar-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #F3F4F6;
+    }
+
+    /* ── Overlay ── */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        z-index: 998;
+        pointer-events: none;
+        transition: background 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+        background: rgba(0, 0, 0, 0.35);
+        pointer-events: auto;
+        -webkit-backdrop-filter: blur(2px);
+        backdrop-filter: blur(2px);
+    }
+
+    /* ── Drawer / Aside ── */
+    aside {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        height: 100vh;
+        padding: 0;
+        transform: translateX(-100%);
+        z-index: 999;
+        border-radius: 0 16px 16px 0;
+        border-right: none;
+        box-shadow: none;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    aside.sidebar-open {
+        transform: translateX(0);
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.12);
+    }
+
+    /* ── Drawer Header (brand + close) ── */
+    .sidebar-mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 20px 0 20px;
+    }
+
+    .sidebar-mobile-header .brand {
+        margin-bottom: 0;
+    }
+
+    .sidebar-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: #F9FAFB;
+        border: none;
+        border-radius: 10px;
+        font-size: 20px;
+        color: #6B7280;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        flex-shrink: 0;
+    }
+
+    .sidebar-close-btn:active {
+        background: #F3F4F6;
+        color: #1F2937;
+        transform: scale(0.95);
+    }
+
+    /* Hide the desktop brand on mobile */
+    .sidebar-desktop-brand {
+        display: none !important;
+    }
+
+    /* ── Nav Items in Drawer ── */
+    aside nav {
+        padding: 12px 16px;
+        flex: 1;
+    }
+
+    aside .nav-item {
+        padding: 13px 16px;
+        border-radius: 12px;
+        margin-bottom: 4px;
+        font-size: 15px;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    aside .nav-item:active {
+        transform: scale(0.98);
+    }
+
+    /* ── Profile Section ── */
+    aside .sidebar-profile {
+        margin: 0;
+        padding: 16px 20px;
+        border-top: 1px solid #F3F4F6;
+        margin-bottom: 0;
+    }
+
+    /* ── Main content padding ── */
+    main {
+        padding: 0 !important;
+        overflow-x: hidden;
+    }
+
+    main > div {
+        padding: 16px !important;
+        padding-top: 72px !important;
+        overflow-x: hidden;
+    }
+
+    .section-view.active {
+        overflow-x: hidden;
+        word-break: break-word;
+    }
+}
+
 .brand {
     font-size: 18px;
     font-weight: 800;
@@ -1169,4 +1381,399 @@ header {
     border-color: var(--primary);
     outline: none;
     box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+}
+
+/* ===== Logbook Page Responsive ===== */
+.logbook-draft-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 12px;
+}
+
+.logbook-table-desktop {
+    display: block;
+}
+
+.logbook-mobile-cards {
+    display: none;
+}
+
+.logbook-progress-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+}
+
+.logbook-progress-label {
+    font-size: 12px;
+}
+
+.logbook-progress-sublabel {
+    font-size: 11px;
+}
+
+@media (max-width: 576px) {
+    .logbook-draft-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .logbook-draft-header .logbook-draft-title {
+        margin-bottom: 4px;
+    }
+
+    .logbook-draft-header .logbook-submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .logbook-table-desktop {
+        display: none;
+    }
+
+    .logbook-mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .logbook-mobile-card {
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 16px;
+        background: #fff;
+    }
+
+    .logbook-mobile-card.sent {
+        background: #fff;
+        border-color: #E5E7EB;
+    }
+
+    .logbook-mobile-card.rejected {
+        background: #FEF2F2;
+        border-color: #FECACA;
+    }
+
+    .logbook-mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .logbook-mobile-card-date {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .logbook-mobile-card-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .logbook-mobile-card-section {
+        margin-bottom: 10px;
+    }
+
+    .logbook-mobile-card-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .logbook-mobile-card-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .logbook-mobile-card-value {
+        font-size: 13px;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    .logbook-progress-circle {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+    }
+
+    .logbook-progress-label {
+        font-size: 10px !important;
+    }
+
+    .logbook-progress-sublabel {
+        font-size: 9px !important;
+    }
+
+    .logbook-pagination-btn {
+        min-width: 32px !important;
+        height: 32px !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+    }
+
+    .logbook-archive-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+
+    .logbook-page .card {
+        padding: 16px;
+    }
+
+    .logbook-page .page-title {
+        font-size: 20px;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       GLOBAL MOBILE OVERRIDES
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .page-title {
+        font-size: 20px !important;
+    }
+
+    .page-subtitle {
+        font-size: 12px !important;
+    }
+
+    .card {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 14px;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       INTERN DASHBOARD - MOBILE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .progress-card-white {
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+    }
+
+    .progress-title {
+        font-size: 16px;
+    }
+
+    .stat-box-value {
+        font-size: 22px;
+    }
+
+    .stat-box-light {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .dashboard-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .dashboard-stat-card {
+        padding: 16px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PRESENSI - MOBILE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .presensi-header {
+        flex-direction: column !important;
+        gap: 4px;
+    }
+
+    .presensi-date {
+        text-align: left !important;
+        font-size: 12px !important;
+    }
+
+    .presensi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .presensi-divider {
+        display: none !important;
+    }
+
+    .presensi-icon-circle {
+        width: 60px !important;
+        height: 60px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .presensi-icon-circle img {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .presensi-time {
+        font-size: 24px !important;
+    }
+
+    .clean-table th,
+    .clean-table td {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .clean-table th:last-child,
+    .clean-table td:last-child {
+        display: none;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PERIZINAN (INTERN) - MOBILE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .permission-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px;
+    }
+
+    .permission-add-btn {
+        width: 100% !important;
+        justify-content: center;
+        padding: 10px 16px !important;
+        font-size: 14px;
+    }
+
+    .permission-tab-btn {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        flex: 1;
+    }
+
+    .permission-step-circle {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+    }
+
+    .permission-card-actions {
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
+    }
+
+    .permission-status-badge {
+        padding: 6px 12px !important;
+        font-size: 10px !important;
+        min-width: 80px !important;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       MENTOR DASHBOARD - MOBILE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .mentor-greeting {
+        font-size: 22px !important;
+    }
+
+    .mentor-summary-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .mentor-summary-grid > div {
+        padding: 20px !important;
+        border-radius: 16px !important;
+    }
+
+    .mentor-card-value {
+        font-size: 28px !important;
+    }
+
+    .mentor-card-label {
+        font-size: 13px !important;
+    }
+
+    .mentor-review-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       MENTOR LOGBOOK REVIEW - MOBILE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .mentor-tab-btn {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        flex: 1;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       MENTOR PERMISSION REVIEW - MOBILE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .mentor-perm-title {
+        font-size: 22px !important;
+    }
+
+    .mentor-perm-status-filters {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .mentor-perm-status-btn {
+        font-size: 12px !important;
+        padding: 10px 8px !important;
+        gap: 4px !important;
+        white-space: nowrap;
+    }
+
+    .mentor-perm-status-btn i {
+        font-size: 15px !important;
+    }
+
+    .mentor-perm-type-filters {
+        flex-wrap: wrap !important;
+    }
+
+    .mentor-perm-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+        min-width: 0 !important;
+    }
+
+    .mentor-perm-grid > div {
+        min-width: 0 !important;
+        overflow: hidden;
+    }
+
+    /* Logbook progress stepper nowrap fix */
+    .logbook-progress-sublabel {
+        white-space: normal !important;
+        word-break: break-word;
+    }
+
+    /* Mentor Permission Detail Modal */
+    .modal-content {
+        margin: 10px !important;
+        max-width: 100% !important;
+        border-radius: 16px !important;
+    }
+
+    /* Prevent any element from causing horizontal scroll */
+    .section-view.active {
+        overflow-x: hidden !important;
+    }
+
+    .section-view img:not(.mobile-topbar-avatar):not(.sidebar-avatar):not(.nav-icon) {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .section-view table {
+        table-layout: fixed;
+        word-break: break-word;
+    }
 }

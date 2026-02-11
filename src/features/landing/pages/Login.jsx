@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../services/api";
+import { login } from "../../../services/api";
 import { motion } from "framer-motion";
 import styles from "../styles/Login.module.css";
 
@@ -25,7 +25,17 @@ const Login = () => {
       if (response.data.success) {
         localStorage.setItem("token", response.data.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.data.user));
-        navigate("/dashboard");
+        
+        // Redirect based on user role
+        const userRole = response.data.data.user.role;
+        if (userRole === 'mentor') {
+          navigate("/mentor/dashboard");
+        } else if (userRole === 'intern') {
+          navigate("/dashboard");
+        } else {
+          // For kadiv or other roles, default to intern dashboard
+          navigate("/dashboard");
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");

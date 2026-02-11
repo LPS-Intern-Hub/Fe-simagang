@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { requestPasswordReset } from "../services/api";
+import { requestPasswordReset } from "../../../services/api";
 import { motion } from "framer-motion";
 import styles from "../styles/Login.module.css";
 

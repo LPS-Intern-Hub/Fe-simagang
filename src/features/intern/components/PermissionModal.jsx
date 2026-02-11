@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createPermission, updatePermission } from '../services/api';
-import Modal from './Modal';
+import { createPermission, updatePermission } from '../../../services/api';
+import Modal from '../../shared/components/Modal';
 
 const PermissionModal = ({ isOpen, onClose, onRefresh, editData = null }) => {
     const [formData, setFormData] = useState({
