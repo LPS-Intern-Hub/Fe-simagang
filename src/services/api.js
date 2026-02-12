@@ -25,6 +25,26 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle 401 (token invalid/expired) → auto redirect to login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Don't redirect if already on login/reset/landing pages
+      const path = window.location.pathname;
+      const publicPaths = ['/', '/login', '/reset-password', '/new-password'];
+      if (!publicPaths.some(p => path === p || path.startsWith(p + '/'))) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.replace('/login');
+        // Return a pending promise to prevent error from propagating to UI
+        return new Promise(() => {});
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // --- DASHBOARD APIs ---
 export const getDashboardData = () => api.get('/dashboard');
 export const getDashboard = () => api.get('/dashboard');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import ConfirmModal from "./ConfirmModal";
+import { logout } from "../../../services/api";
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const navigate = useNavigate();
@@ -164,7 +165,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         <ConfirmModal
           isOpen={showLogoutModal}
           onClose={() => setShowLogoutModal(false)}
-          onConfirm={() => {
+          onConfirm={async () => {
+            try { await logout(); } catch (e) { /* ignore */ }
             localStorage.clear();
             navigate('/');
           }}
