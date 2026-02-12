@@ -509,7 +509,9 @@ const MentorLogbookReview = () => {
                 title="Setujui Logbook?"
                 message="Apakah Anda yakin ingin menyetujui semua logbook bulan ini?"
                 confirmText="Setujui"
+                confirmButtonStyle="primary"
                 confirmColor="#10B981"
+                image="/images/approve-logbook.svg"
                 loading={submitting}
             />
 

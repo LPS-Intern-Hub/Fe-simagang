@@ -754,7 +754,7 @@ const MentorPermissionReview = () => {
                 message="Perizinan akan langsung disetujui dan intern dapat menggunakan izin tersebut."
                 confirmText="Ya, Setujui"
                 cancelText="Batal"
-                image="/images/sukses.png"
+                image="/images/approve-permission.svg"
                 confirmButtonStyle="primary"
             />
 

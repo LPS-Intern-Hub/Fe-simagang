@@ -24,6 +24,7 @@ const Logbook = () => {
   const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
   const [errorModal, setErrorModal] = useState({ isOpen: false, title: '', message: '' });
   const [validationError, setValidationError] = useState('');
+  const [showRejectionDetail, setShowRejectionDetail] = useState(false);
 
   const [editId, setEditId] = useState(null);
 
@@ -157,7 +158,7 @@ const Logbook = () => {
   };
 
   const handleSubmitClick = () => {
-    const draftLogbooks = logbooks.filter(l => l.status === 'draft');
+    const draftLogbooks = logbooks.filter(l => l.status === 'draft' || l.status === 'rejected');
     if (draftLogbooks.length === 0) {
       return;
     }
@@ -166,7 +167,7 @@ const Logbook = () => {
 
   const submitToMentor = async () => {
     setShowSubmitModal(false);
-    const draftLogbooks = logbooks.filter(l => l.status === 'draft');
+    const draftLogbooks = logbooks.filter(l => l.status === 'draft' || l.status === 'rejected');
 
     try {
       for (const logbook of draftLogbooks) {
@@ -217,14 +218,24 @@ const Logbook = () => {
   };
 
   // Group logbooks by status and month
-  const draftLogbooks = logbooks.filter(l => l.status === 'draft');
+  const draftLogbooks = logbooks.filter(l => l.status === 'draft' && !l.rejection_reason);
   const approvedLogbooks = logbooks.filter(l => l.status === 'approved');
   const sentLogbooks = logbooks.filter(l => l.status === 'sent' || l.status === 'review_kadiv');
+  const rejectedLogbooks = logbooks.filter(l => l.status === 'rejected' || (l.status === 'draft' && l.rejection_reason));
   // Logbooks shown in draft table: draft + sent + review_kadiv + rejected
   const tableLogbooks = logbooks.filter(l => l.status !== 'approved');
 
-  // Get the most recent sent/in-progress logbook to display progress
-  const inProgressLogbook = sentLogbooks.length > 0 ? sentLogbooks[0] : null;
+  // Get the most recent sent/in-progress/rejected logbook to display progress
+  const inProgressLogbook = sentLogbooks.length > 0 
+    ? sentLogbooks[0] 
+    : rejectedLogbooks.length > 0 
+      ? rejectedLogbooks[0] 
+      : null;
+
+  // Determine effective status (draft with rejection_reason = rejected)
+  const effectiveStatus = inProgressLogbook 
+    ? (inProgressLogbook.status === 'draft' && inProgressLogbook.rejection_reason ? 'rejected' : inProgressLogbook.status)
+    : null;
 
   // Group table logbooks by week (Monday-Friday)
   const draftsByWeek = tableLogbooks.reduce((acc, logbook) => {
@@ -414,18 +425,19 @@ const Logbook = () => {
               zIndex: 1
             }}>
               {[0, 1, 2].map((lineIndex) => {
-                const currentStatus = inProgressLogbook.status;
-                let isCompleted = false;
+                const currentStatus = effectiveStatus;
+                let lineColor = '#E0E0E0';
 
                 // Line 0 is between step 1 and 2, Line 1 is between step 2 and 3, Line 2 is between step 3 and 4
-                if (currentStatus === 'review_kadiv' && lineIndex === 0) isCompleted = true;
-                else if (currentStatus === 'approved' && lineIndex <= 2) isCompleted = true;
+                if (currentStatus === 'review_kadiv' && lineIndex === 0) lineColor = '#4CAF50';
+                else if (currentStatus === 'approved' && lineIndex <= 2) lineColor = '#4CAF50';
+                else if (currentStatus === 'rejected' && lineIndex === 0) lineColor = '#EF4444';
 
                 return (
                   <div key={lineIndex} style={{
                     flex: 1,
                     height: '2px',
-                    background: isCompleted ? '#4CAF50' : '#E0E0E0'
+                    background: lineColor
                   }} />
                 );
               })}
@@ -441,7 +453,7 @@ const Logbook = () => {
               ].map((step, index) => {
                 // Determine step state
                 let stepState = 'pending';
-                const currentStatus = inProgressLogbook.status;
+                const currentStatus = effectiveStatus;
 
                 if (currentStatus === 'sent') {
                   if (index === 0) stepState = 'completed';
@@ -452,7 +464,9 @@ const Logbook = () => {
                 } else if (currentStatus === 'approved') {
                   stepState = 'completed';
                 } else if (currentStatus === 'rejected') {
-                  stepState = 'pending';
+                  if (index === 0) stepState = 'completed';
+                  else if (index === 1) stepState = 'rejected';
+                  else stepState = 'pending';
                 }
 
                 return (
@@ -469,14 +483,17 @@ const Logbook = () => {
                       width: '40px',
                       height: '40px',
                       borderRadius: '50%',
-                      background: stepState === 'completed' ? '#4CAF50' : stepState === 'current' ? '#FF6B00' : '#E0E0E0',
+                      background: stepState === 'completed' ? '#4CAF50' 
+                        : stepState === 'rejected' ? '#EF4444'
+                        : stepState === 'current' ? '#FF6B00' 
+                        : '#E0E0E0',
                       border: stepState === 'current' ? '3px solid #FFF' : 'none',
                       boxShadow: stepState === 'current' ? '0 0 0 2px #FF6B00' : 'none',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: stepState === 'pending' ? '#999' : '#fff',
-                      fontSize: stepState === 'completed' ? '18px' : '14px',
+                      fontSize: stepState === 'completed' || stepState === 'rejected' ? '18px' : '14px',
                       fontWeight: '600',
                       marginBottom: '8px',
                       position: 'relative',
@@ -484,6 +501,8 @@ const Logbook = () => {
                     }}>
                       {stepState === 'completed' ? (
                         <i className="ri-check-line"></i>
+                      ) : stepState === 'rejected' ? (
+                        <i className="ri-close-line"></i>
                       ) : (
                         step.number
                       )}
@@ -493,7 +512,7 @@ const Logbook = () => {
                     <div className="logbook-progress-label" style={{
                       fontSize: '12px',
                       fontWeight: '500',
-                      color: stepState === 'pending' ? '#999' : '#333',
+                      color: stepState === 'rejected' ? '#EF4444' : stepState === 'pending' ? '#999' : '#333',
                       textAlign: 'center',
                       marginBottom: '4px',
                       whiteSpace: 'nowrap'
@@ -504,12 +523,14 @@ const Logbook = () => {
                     {/* Date or Status */}
                     <div className="logbook-progress-sublabel" style={{
                       fontSize: '11px',
-                      color: stepState === 'current' ? '#FF6B00' : '#999',
+                      color: stepState === 'rejected' ? '#EF4444' : stepState === 'current' ? '#FF6B00' : '#999',
                       textAlign: 'center',
                       whiteSpace: 'nowrap'
                     }}>
                       {stepState === 'completed' && inProgressLogbook.date ?
                         new Date(inProgressLogbook.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                        : stepState === 'rejected' && inProgressLogbook.date ?
+                          new Date(inProgressLogbook.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })
                         : stepState === 'current' ? 'Sedang di review' : ''}
                     </div>
                   </div>
@@ -521,34 +542,56 @@ const Logbook = () => {
           {/* Status Info */}
           <div style={{
             padding: '14px 16px',
-            background: '#FFF8F0',
+            background: effectiveStatus === 'rejected' ? '#FEF2F2' : '#FFF8F0',
             borderRadius: '8px',
             display: 'flex',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             gap: '12px'
           }}>
             <div style={{
               width: '32px',
               height: '32px',
               borderRadius: '50%',
-              background: '#FFE8CC',
+              background: effectiveStatus === 'rejected' ? '#FEE2E2' : '#FFE8CC',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0
             }}>
-              <i className="ri-time-line" style={{ fontSize: '16px', color: '#FF6B00' }}></i>
+              {effectiveStatus === 'rejected' 
+                ? <i className="ri-close-circle-line" style={{ fontSize: '16px', color: '#EF4444' }}></i>
+                : <i className="ri-time-line" style={{ fontSize: '16px', color: '#FF6B00' }}></i>
+              }
             </div>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '2px' }}>
-                {inProgressLogbook.status === 'sent' && 'Menunggu Review Mentor'}
-                {inProgressLogbook.status === 'review_kadiv' && 'Menunggu Review Ka. Divisi'}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: effectiveStatus === 'rejected' ? '#991B1B' : '#333', marginBottom: '2px' }}>
+                {effectiveStatus === 'sent' && 'Menunggu Review Mentor'}
+                {effectiveStatus === 'review_kadiv' && 'Menunggu Review Ka. Divisi'}
+                {effectiveStatus === 'rejected' && 'Pengajuan Logbook Ditolak'}
               </div>
-              <div style={{ fontSize: '12px', color: '#666' }}>
-                {inProgressLogbook.status === 'sent' && 'Mohon tunggu, logbook sedang diperiksa oleh Mentor.'}
-                {inProgressLogbook.status === 'review_kadiv' && 'Mohon tunggu, logbook sedang diperiksa oleh Ka. Divisi.'}
+              <div style={{ fontSize: '12px', color: effectiveStatus === 'rejected' ? '#7F1D1D' : '#666' }}>
+                {effectiveStatus === 'sent' && 'Mohon tunggu, logbook sedang diperiksa oleh Mentor.'}
+                {effectiveStatus === 'review_kadiv' && 'Mohon tunggu, logbook sedang diperiksa oleh Ka. Divisi.'}
+                {effectiveStatus === 'rejected' && 'Logbook ditolak, silahkan perbaiki.'}
               </div>
             </div>
+            {effectiveStatus === 'rejected' && inProgressLogbook.rejection_reason && (
+              <button
+                onClick={() => setShowRejectionDetail(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#EF4444',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  padding: 0
+                }}
+              >
+                Lihat komentar
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -567,23 +610,8 @@ const Logbook = () => {
               <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px' }}>
                 Draft: {currentWeekLogbooks[0] && formatMonth(currentWeekLogbooks[0].date)}
               </h3>
-              {currentWeekLogbooks.some(log => log.rejection_reason) && (
-                <span style={{
-                  padding: '4px 12px',
-                  background: '#FEE2E2',
-                  color: '#991B1B',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}>
-                  <i className="ri-error-warning-line" style={{ marginRight: '4px' }}></i>
-                  Ada yang ditolak
-                </span>
-              )}
             </div>
-            {draftLogbooks.length > 0 && (
+            {(draftLogbooks.length > 0 || rejectedLogbooks.length > 0) && (
               <button
                 className="logbook-submit-btn"
                 onClick={handleSubmitClick}
@@ -622,11 +650,10 @@ const Logbook = () => {
               <tbody>
                 {sortedDates.map((dateKey, dateIndex) => {
                   const logbooksOnDate = logbooksByDate[dateKey];
-                  const hasRejection = logbooksOnDate.some(log => log.rejection_reason);
                   const isSent = logbooksOnDate.some(log => log.status === 'sent' || log.status === 'review_kadiv');
                   return (
                     <>
-                    <tr key={dateKey} style={{ borderBottom: hasRejection ? 'none' : '1px solid #f0f0f0', background: hasRejection ? '#FEF2F2' : 'white' }}>
+                    <tr key={dateKey} style={{ borderBottom: '1px solid #f0f0f0', background: 'white' }}>
                       <td style={{ padding: '16px 12px', fontSize: '14px', whiteSpace: 'nowrap', verticalAlign: 'top', color: '#333', fontWeight: '500' }}>
                         <div>{formatDateShort(dateKey)}</div>
                         {isSent && (
@@ -725,40 +752,7 @@ const Logbook = () => {
                         </div>
                       </td>
                     </tr>
-                    {/* Rejection Warning Row */}
-                    {hasRejection && (
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td colSpan="5" style={{ padding: '12px', background: '#FEF2F2' }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                            <div style={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '6px',
-                              background: '#FEE2E2',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0
-                            }}>
-                              <i className="ri-error-warning-line" style={{ fontSize: '16px', color: '#DC2626' }}></i>
-                            </div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: '12px', fontWeight: '700', color: '#991B1B', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Alasan Penolakan
-                              </div>
-                              {logbooksOnDate.filter(log => log.rejection_reason).map(log => (
-                                <div key={log.id_logbooks} style={{ fontSize: '13px', color: '#7F1D1D', marginBottom: '6px', lineHeight: '1.5' }}>
-                                  • {log.rejection_reason}
-                                </div>
-                              ))}
-                              <div style={{ fontSize: '11px', color: '#991B1B', marginTop: '6px', fontStyle: 'italic' }}>
-                                💡 Silakan edit logbook di atas dan ajukan kembali setelah diperbaiki
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+
                     </>
                   );
                 })}
@@ -770,10 +764,9 @@ const Logbook = () => {
           <div className="logbook-mobile-cards">
             {sortedDates.map((dateKey, dateIndex) => {
               const logbooksOnDate = logbooksByDate[dateKey];
-              const hasRejection = logbooksOnDate.some(log => log.rejection_reason);
               const isSent = logbooksOnDate.some(log => log.status === 'sent' || log.status === 'review_kadiv');
               return (
-                <div key={dateKey} className={`logbook-mobile-card ${hasRejection ? 'rejected' : ''}`}>
+                <div key={dateKey} className="logbook-mobile-card">
                   <div className="logbook-mobile-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className="logbook-mobile-card-date">{formatDateShort(dateKey)}</span>
@@ -811,14 +804,7 @@ const Logbook = () => {
                       </div>
                     </div>
                   ))}
-                  {hasRejection && (
-                    <div style={{ marginTop: '8px', padding: '10px', background: '#FEE2E2', borderRadius: '8px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#991B1B', marginBottom: '4px', textTransform: 'uppercase' }}>Alasan Penolakan</div>
-                      {logbooksOnDate.filter(log => log.rejection_reason).map(log => (
-                        <div key={log.id_logbooks} style={{ fontSize: '12px', color: '#7F1D1D', lineHeight: '1.5' }}>• {log.rejection_reason}</div>
-                      ))}
-                    </div>
-                  )}
+
                 </div>
               );
             })}
@@ -1188,6 +1174,77 @@ const Logbook = () => {
         title={errorModal.title}
         message={errorModal.message}
       />
+
+      {/* Rejection Detail Modal */}
+      {showRejectionDetail && inProgressLogbook && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}
+          onClick={() => setShowRejectionDetail(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: '16px',
+              padding: '28px',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1F2937' }}>
+                Komentar Mentor
+              </h3>
+              <button
+                onClick={() => setShowRejectionDetail(false)}
+                style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#9CA3AF', padding: 0 }}
+              >
+                <i className="ri-close-line"></i>
+              </button>
+            </div>
+            <div style={{
+              padding: '16px',
+              background: '#FEF2F2',
+              borderRadius: '12px',
+              border: '1px solid #FECACA'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <i className="ri-error-warning-fill" style={{ color: '#EF4444', fontSize: '18px' }}></i>
+                <span style={{ fontSize: '14px', fontWeight: '700', color: '#991B1B' }}>Alasan Penolakan</span>
+              </div>
+              <p style={{ fontSize: '14px', color: '#7F1D1D', lineHeight: '1.6', margin: 0 }}>
+                {inProgressLogbook.rejection_reason || 'Tidak ada alasan yang diberikan.'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowRejectionDetail(false)}
+              style={{
+                width: '100%',
+                marginTop: '20px',
+                padding: '12px',
+                borderRadius: '10px',
+                border: 'none',
+                background: '#EF4444',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -290,7 +290,7 @@ const Presensi = () => {
           <div className="card" style={{ marginBottom: '30px' }}>
             <div className="presensi-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '30px', marginBottom: '30px' }}>
               {/* ABSEN MASUK */}
-              <div style={{ textAlign: 'center' }}>
+              <div className="presensi-item" style={{ textAlign: 'center' }}>
                 <div className="presensi-icon-circle" style={{
                   width: '80px',
                   height: '80px',
@@ -307,32 +307,34 @@ const Presensi = () => {
                     style={{ width: '39px', height: '39px', objectFit: 'contain' }}
                   />
                 </div>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#64748B',
-                  marginBottom: '12px'
-                }}>
-                  Absen Masuk
-                </div>
-                <div className="presensi-time" style={{
-                  fontSize: '32px',
-                  fontWeight: '800',
-                  color: '#1F2937',
-                  marginBottom: '8px',
-                  letterSpacing: '1px'
-                }}>
-                  {absenIn}
-                </div>
-                <div style={{
-                  fontSize: '13px',
-                  color: '#9CA3AF',
-                  background: '#F3F4F6',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  display: 'inline-block'
-                }}>
-                  Lokasi: {locationIn}
+                <div className="presensi-item-info">
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#64748B',
+                    marginBottom: '12px'
+                  }}>
+                    Absen Masuk
+                  </div>
+                  <div className="presensi-time" style={{
+                    fontSize: '32px',
+                    fontWeight: '800',
+                    color: '#1F2937',
+                    marginBottom: '8px',
+                    letterSpacing: '1px'
+                  }}>
+                    {absenIn}
+                  </div>
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#9CA3AF',
+                    background: '#F3F4F6',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    display: 'inline-block'
+                  }}>
+                    Lokasi: {locationIn}
+                  </div>
                 </div>
               </div>
 
@@ -340,7 +342,7 @@ const Presensi = () => {
               <div className="presensi-divider" style={{ background: '#E5E7EB', width: '1px' }}></div>
 
               {/* ABSEN PULANG */}
-              <div style={{ textAlign: 'center', opacity: absenIn === "--:--" ? 0.5 : 1 }}>
+              <div className="presensi-item" style={{ textAlign: 'center', opacity: absenIn === "--:--" ? 0.5 : 1 }}>
                 <div className="presensi-icon-circle" style={{
                   width: '80px',
                   height: '80px',
@@ -357,32 +359,34 @@ const Presensi = () => {
                     style={{ width: '39px', height: '39px', objectFit: 'contain' }}
                   />
                 </div>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#64748B',
-                  marginBottom: '12px'
-                }}>
-                  Absen Pulang
-                </div>
-                <div className="presensi-time" style={{
-                  fontSize: '32px',
-                  fontWeight: '800',
-                  color: '#1F2937',
-                  marginBottom: '8px',
-                  letterSpacing: '1px'
-                }}>
-                  {absenOut}
-                </div>
-                <div style={{
-                  fontSize: '13px',
-                  color: '#9CA3AF',
-                  background: '#F3F4F6',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  display: 'inline-block'
-                }}>
-                  Lokasi: {locationOut}
+                <div className="presensi-item-info">
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#64748B',
+                    marginBottom: '12px'
+                  }}>
+                    Absen Pulang
+                  </div>
+                  <div className="presensi-time" style={{
+                    fontSize: '32px',
+                    fontWeight: '800',
+                    color: '#1F2937',
+                    marginBottom: '8px',
+                    letterSpacing: '1px'
+                  }}>
+                    {absenOut}
+                  </div>
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#9CA3AF',
+                    background: '#F3F4F6',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    display: 'inline-block'
+                  }}>
+                    Lokasi: {locationOut}
+                  </div>
                 </div>
               </div>
             </div>
