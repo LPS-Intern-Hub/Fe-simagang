@@ -26,9 +26,6 @@ const LandingNavbar = () => {
         <li onClick={() => scrollToSection("fitur")} style={{ cursor: "pointer" }}>
           Fitur
         </li>
-        <li onClick={() => scrollToSection("aturan")} style={{ cursor: "pointer" }}>
-          Aturan
-        </li>
         <li>
           <Link to="/login" className={styles.loginBtn}>
             Login Peserta

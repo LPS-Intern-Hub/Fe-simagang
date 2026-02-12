@@ -177,13 +177,18 @@
 
 .featureCard {
   background: white;
-  padding: 18px 32px;
-  border-radius: 16px;
+  width: 250px;
+  height: 150px;
+  padding: 5px 25px;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
   font-weight: 600;
   font-size: 14px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -193,10 +198,16 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.valueIcon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
 
 /* MAIN FEATURE */
 .mainFeature {
-  padding: 80px 0 60px 0;
+  padding: 80px 80px 100px 80px;
   text-align: center;
   background: transparent;
 }
@@ -225,21 +236,26 @@
 }
 
 .featureGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  display: flex;
   justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
 }
 
 .featureItem {
   background: #fff;
-  border-radius: 22px;
+  width: 420px;
+  height: 344px;
+  border-radius: 20px;
+  border: 1px solid #E5E7EB;
+  border-left: 4px solid #FF6B00;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-  padding: 38px 28px 32px 28px;
+  padding: 20px 18px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
   transition: box-shadow 0.2s, transform 0.2s;
 }
 .featureItem:hover {
@@ -249,22 +265,23 @@
 .featureIconBox {
   width: 56px;
   height: 56px;
-  background: #ffe0c2;
+  background: #FF6B00;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 .featureIconImg {
   width: 32px;
   height: 32px;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 .featureItemTitle {
   font-size: 17px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   color: #222;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
@@ -273,6 +290,9 @@
   color: #444;
   line-height: 1.7;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 
@@ -458,4 +478,301 @@
   margin: 18px 0 0 0;
   padding-bottom: 32px;
   font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ==================== RESPONSIVE MOBILE ==================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 16px 40px;
+  }
+
+  .hero {
+    padding: 50px 40px 60px;
+  }
+
+  .title {
+    font-size: 42px;
+  }
+
+  .content {
+    gap: 40px;
+  }
+
+  .logoBox {
+    width: 280px;
+    height: 280px;
+  }
+
+  .mainFeature {
+    padding: 60px 40px 80px;
+  }
+
+  .featureItem {
+    width: 340px;
+    height: auto;
+    min-height: 280px;
+  }
+
+  .featureCard {
+    width: 200px;
+    height: 130px;
+  }
+
+  .footerTitle {
+    font-size: 28px;
+  }
+
+  .footerDesc {
+    font-size: 16px;
+    padding: 0 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 14px 20px;
+  }
+
+  .navLinks {
+    gap: 16px;
+    font-size: 12px;
+  }
+
+  .navLinks li:not(:last-child) {
+    display: none;
+  }
+
+  .loginBtn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .hero {
+    padding: 40px 20px 50px;
+  }
+
+  .heroTop {
+    margin-bottom: 50px;
+  }
+
+  .badge {
+    padding: 8px 16px;
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .badgeIcon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .title {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 0 10px;
+  }
+
+  .content {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .textBox {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .sectionLabel {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 1.7;
+    text-align: justify;
+  }
+
+  .logoBox {
+    width: 200px;
+    height: 200px;
+    order: -1;
+  }
+
+  .valueSection {
+    padding: 0 20px 30px;
+  }
+
+  .features {
+    gap: 16px;
+  }
+
+  .featureCard {
+    width: 100%;
+    max-width: 280px;
+    height: 120px;
+    padding: 15px 20px;
+  }
+
+  .valueIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .mainFeature {
+    padding: 50px 20px 60px;
+  }
+
+  .featureLabel {
+    font-size: 12px;
+  }
+
+  .featureTitle {
+    font-size: 24px;
+  }
+
+  .featureSubtitle {
+    font-size: 14px;
+    padding: 0 10px;
+    margin-bottom: 30px;
+  }
+
+  .featureGrid {
+    gap: 20px;
+  }
+
+  .featureItem {
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    min-height: 240px;
+    padding: 25px 20px;
+    gap: 16px;
+  }
+
+  .featureIconBox {
+    width: 48px;
+    height: 48px;
+  }
+
+  .featureIconImg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .featureItemTitle {
+    font-size: 16px;
+  }
+
+  .featureItemDesc {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .footerSection {
+    padding: 40px 20px 0;
+  }
+
+  .footerMain {
+    gap: 8px;
+  }
+
+  .footerLogo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .footerTitle {
+    font-size: 24px;
+  }
+
+  .footerDesc {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0 24px 0;
+    padding: 0 10px;
+  }
+
+  .footerDivider {
+    margin: 24px 0 0 0;
+  }
+
+  .footerCopyright {
+    font-size: 12px;
+    padding-bottom: 24px;
+    margin: 14px 0 0 0;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 12px 16px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .logoIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .hero {
+    padding: 30px 16px 40px;
+  }
+
+  .heroTop {
+    margin-bottom: 40px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .logoBox {
+    width: 160px;
+    height: 160px;
+  }
+
+  .description {
+    font-size: 13px;
+  }
+
+  .featureCard {
+    max-width: 100%;
+    height: 110px;
+  }
+
+  .featureTitle {
+    font-size: 22px;
+  }
+
+  .featureItem {
+    max-width: 100%;
+    min-height: 220px;
+    padding: 20px 16px;
+  }
+
+  .footerTitle {
+    font-size: 20px;
+  }
+
+  .footerDesc {
+    font-size: 13px;
+  }
 }

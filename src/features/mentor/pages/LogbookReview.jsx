@@ -253,7 +253,7 @@ const MentorLogbookReview = () => {
 
                                 {/* Month Cards */}
                                 {months.map((month) => {
-                                    const isApproved = month.logbooks[0].status === 'approved';
+                                    const isApproved = month.logbooks[0].status === 'approved' || month.logbooks[0].status === 'review_kadiv';
                                     const isRejected = month.logbooks[0].status === 'rejected';
                                     const isPending = month.logbooks[0].status === 'sent';
 

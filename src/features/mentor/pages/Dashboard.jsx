@@ -18,6 +18,18 @@ const MentorDashboard = () => {
         fetchDashboardData();
     }, []);
 
+    // Helper function to count unique intern-month combinations
+    const countUniqueInternMonths = (logbooks) => {
+        const uniqueCombinations = new Set();
+        logbooks.forEach(logbook => {
+            const internId = logbook.internship?.id_internships;
+            const date = new Date(logbook.date);
+            const monthYear = `${internId}-${date.getFullYear()}-${date.getMonth()}`;
+            uniqueCombinations.add(monthYear);
+        });
+        return uniqueCombinations.size;
+    };
+
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
@@ -29,9 +41,10 @@ const MentorDashboard = () => {
             }
 
             // Get pending logbooks (status: sent - LogbookStatus enum)
-            const logbooksResponse = await getLogbooks({ status: 'sent', limit: 100 });
+            const logbooksResponse = await getLogbooks({ status: 'sent', limit: 1000 });
             console.log('📊 Logbooks Response:', logbooksResponse.data);
-            const pendingLogbooks = logbooksResponse.data.data?.length || 0;
+            const pendingLogbooksData = logbooksResponse.data.data || [];
+            const pendingLogbooks = countUniqueInternMonths(pendingLogbooksData);
 
             // Get pending permissions (status: pending - PermissionStatus enum)
             const permissionsResponse = await getPermissions({ status: 'pending', limit: 100 });
@@ -49,11 +62,12 @@ const MentorDashboard = () => {
             const reviewedLogbooksResponse = await getLogbooks({
                 month: currentMonth,
                 year: currentYear,
-                limit: 100
+                limit: 1000
             });
-            const reviewedLogbooks = reviewedLogbooksResponse.data.data?.filter(
+            const reviewedLogbooksData = reviewedLogbooksResponse.data.data?.filter(
                 log => ['review_kadiv', 'approved', 'rejected'].includes(log.status)
-            ).length || 0;
+            ) || [];
+            const reviewedLogbooks = countUniqueInternMonths(reviewedLogbooksData);
 
             // Get reviewed permissions this month
             const reviewedPermissionsResponse = await getPermissions({

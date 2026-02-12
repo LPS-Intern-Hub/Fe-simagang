@@ -24,14 +24,16 @@ const HeroSection = () => {
         <div className={styles.textBox}>
           <h3 className={styles.sectionLabel}>MENGENAL LPS</h3>
           <p className={styles.description}>
-            <strong>Lembaga Penjamin Simpanan</strong> (LPS) adalah lembaga
-            independen yang dibentuk berdasarkan UU No. 24 Tahun 2004. Kami hadir untuk menjamin simpanan nasabah dan
-            menjaga stabilitas sistem perbankan nasional.
+            <strong>Lembaga Penjamin Simpanan (LPS)</strong> merupakan lembaga independen
+            yang dibentuk berdasarkan Undang-Undang Nomor 24 Tahun 2004,
+            dengan tugas menjamin simpanan nasabah serta menjaga stabilitas
+            sistem perbankan nasional.
           </p>
           <p className={styles.description}>
-            Sebagai peserta magang, Anda menjadi bagian dari
-            ekosistem yang menjunjung tinggi integritas, fokus pada
-            pelayanan publik, dan standar kerja profesional.
+            Melalui program magang di LPS, peserta menjadi bagian dari
+            lingkungan kerja yang menjunjung tinggi integritas, profesionalisme,
+            dan pelayanan publik, sekaligus memperoleh pengalaman kerja yang
+            relevan dan bermakna.
           </p>
         </div>
 
