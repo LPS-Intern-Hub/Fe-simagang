@@ -25,6 +25,12 @@ import MentorDashboard from "./features/mentor/pages/Dashboard";
 import MentorLogbookReview from "./features/mentor/pages/LogbookReview";
 import MentorPermissionReview from "./features/mentor/pages/PermissionReview";
 
+// Admin Pages
+import AdminDashboard from "./features/admin/Dashboard";
+import UserManagement from "./features/admin/UserManagement";
+import PermissionManagement from "./features/admin/PermissionManagement";
+import InternshipMonitoring from "./features/admin/InternshipMonitoring";
+
 
 // Protected Route
 const ProtectedRoute = ({ children }) => {
@@ -164,6 +170,48 @@ function App() {
             <ProtectedRoute>
               <MainLayout activeTab="mentor-permission" setActiveTab={setActiveTab}>
                 <MentorPermissionReview />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ADMIN ROUTES */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-dashboard" setActiveTab={setActiveTab}>
+                <AdminDashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-users" setActiveTab={setActiveTab}>
+                <UserManagement />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/permissions"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-permissions" setActiveTab={setActiveTab}>
+                <PermissionManagement />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/internships"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-internships" setActiveTab={setActiveTab}>
+                <InternshipMonitoring />
               </MainLayout>
             </ProtectedRoute>
           }

@@ -25,15 +25,16 @@ const Login = () => {
       if (response.data.success) {
         localStorage.setItem("token", response.data.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.data.user));
-        
+
         // Redirect based on user role
         const userRole = response.data.data.user.role;
         if (userRole === 'mentor') {
           navigate("/mentor/dashboard");
         } else if (userRole === 'intern') {
           navigate("/dashboard");
+        } else if (userRole === 'admin' || userRole === 'SDM' || userRole === 'kadiv') {
+          navigate("/admin/dashboard");
         } else {
-          // For kadiv or other roles, default to intern dashboard
           navigate("/dashboard");
         }
       }
@@ -46,7 +47,7 @@ const Login = () => {
 
   return (
     <div className={styles.loginPage}>
-      <motion.div 
+      <motion.div
         className={styles.loginContainer}
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

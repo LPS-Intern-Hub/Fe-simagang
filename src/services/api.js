@@ -38,7 +38,7 @@ api.interceptors.response.use(
         localStorage.removeItem('user');
         window.location.replace('/login');
         // Return a pending promise to prevent error from propagating to UI
-        return new Promise(() => {});
+        return new Promise(() => { });
       }
     }
     return Promise.reject(error);
@@ -106,9 +106,19 @@ export const getLogbookStats = () => api.get('/logbooks/stats');
 export const getMentorInternships = () => api.get('/internships/mentor');
 
 // --- MENTOR APIs ---
-export const reviewLogbook = (id, action, rejection_reason = null) => 
+export const reviewLogbook = (id, action, rejection_reason = null) =>
   api.put(`/logbooks/${id}/review`, { action, rejection_reason });
-export const reviewPermission = (id, action, rejection_reason = null) => 
+export const reviewPermission = (id, action, rejection_reason = null) =>
   api.put(`/permissions/${id}/review`, { action, rejection_reason });
+
+// --- ADMIN APIs ---
+export const getAdminDashboard = () => api.get('/dashboard/admin');
+export const getAllUsers = (params) => api.get('/users', { params });
+export const createUser = (data) => api.post('/users', data);
+export const updateUser = (id, data) => api.put(`/users/${id}`, data);
+export const updateUserRole = (id, role) => api.put(`/users/${id}/role`, { role });
+export const toggleUserStatus = (id, isActive) => api.put(`/users/${id}/status`, { isActive });
+export const resetUserPassword = (id) => api.put(`/users/${id}/reset-password`);
+export const getAllInternships = (status) => api.get('/internships/admin', { params: { status } });
 
 export default api;

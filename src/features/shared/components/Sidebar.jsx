@@ -40,9 +40,18 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: "mentor-permission", path: "/mentor/permission-review", icon: "/images/permission.png", iconOren: "/images/perizinanOren.png", label: "Review Perizinan" },
   ];
 
-  const menuItems = user.role === 'mentor' 
-    ? mentorMenuItems 
-    : internMenuItems;
+  const adminMenuItems = [
+    { id: "admin-dashboard", path: "/admin/dashboard", icon: "/images/dashboard.png", iconOren: "/images/dashboardOren.png", label: "Dashboard" },
+    { id: "admin-users", path: "/admin/users", icon: "/images/profile.png", iconOren: "/images/profile.png", label: "Manajemen User" },
+    { id: "admin-permissions", path: "/admin/permissions", icon: "/images/permission.png", iconOren: "/images/perizinanOren.png", label: "Manajemen Izin" },
+    { id: "admin-internships", path: "/admin/internships", icon: "/images/logbook.png", iconOren: "/images/logbookOren.png", label: "Monitoring Internship" },
+  ];
+
+  const menuItems = user.role === 'mentor'
+    ? mentorMenuItems
+    : (user.role === 'admin' || user.role === 'SDM' || user.role === 'kadiv'
+      ? adminMenuItems
+      : internMenuItems);
 
   return (
     <>
