@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getDashboard } from '../../../services/api';
+import { getDashboard, getAnnouncements } from '../../../services/api';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState(null);
   const [internshipData, setInternshipData] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
   const [data, setData] = useState({
     progress: '0%',
     hariBerjalan: 0,
@@ -18,18 +19,15 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await getDashboard();
+        const [dashboardRes, announcementRes] = await Promise.all([
+          getDashboard(),
+          getAnnouncements({ role: 'intern' })
+        ]);
 
-        if (response.data.success) {
-          const dashboardData = response.data.data;
-
-          // Set user data
+        if (dashboardRes.data.success) {
+          const dashboardData = dashboardRes.data.data;
           setUserData(dashboardData.user);
-
-          // Set internship data
           setInternshipData(dashboardData.internship_progress);
-
-          // Set dashboard stats
           setData({
             progress: `${dashboardData.internship_progress.percentage}%`,
             hariBerjalan: dashboardData.internship_progress.days_passed,
@@ -38,6 +36,11 @@ const Dashboard = () => {
             logbook: dashboardData.logbook_filled
           });
         }
+
+        if (announcementRes.data.success) {
+          setAnnouncements(announcementRes.data.data);
+        }
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching dashboard:', err);
@@ -127,6 +130,31 @@ const Dashboard = () => {
             <div className="stat-label">Logbook Terisi</div>
           </div>
         </div>
+      </div>
+
+      {/* Announcements Section */}
+      <div style={{ marginTop: '30px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', color: '#1F2937' }}>Pengumuman Terbaru</h3>
+        {announcements.length === 0 ? (
+          <div className="card" style={{ padding: '20px', textAlign: 'center', color: '#64748B' }}>
+            Belum ada pengumuman untuk Anda.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: '15px' }}>
+            {announcements.map((item) => (
+              <div key={item.id_announcements} className="card" style={{ padding: '20px', borderLeft: '4px solid #FF6B00' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <h4 style={{ margin: 0, fontWeight: 'bold', color: '#111827' }}>{item.title}</h4>
+                  <span style={{ fontSize: '12px', color: '#94A3B8' }}>{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', color: '#4B5563', lineHeight: '1.6' }}>{item.content}</p>
+                <div style={{ marginTop: '10px', fontSize: '11px', fontWeight: 'bold', color: '#FF6B00' }}>
+                  Oleh: {item.author?.full_name}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

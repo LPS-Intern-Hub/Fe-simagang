@@ -31,20 +31,24 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: "perizinan", icon: "/images/permission.png", iconOren: "/images/perizinanOren.png", label: "Perizinan" },
     { id: "presensi", icon: "/images/absen.png", iconOren: "/images/absensiOren.png", label: "Presensi" },
     { id: "logbook", icon: "/images/logbook.png", iconOren: "/images/logbookOren.png", label: "Logbook" },
+    { id: "tasks", icon: "/images/logbook.png", iconOren: "/images/logbookOren.png", label: "Tugas" },
     { id: "peraturan", icon: "/images/peraturan.png", iconOren: "/images/peraturanOren.png", label: "Peraturan" },
   ];
 
   const mentorMenuItems = [
     { id: "mentor-dashboard", path: "/mentor/dashboard", icon: "/images/dashboard.png", iconOren: "/images/dashboardOren.png", label: "Dashboard" },
+    { id: "mentor-tasks", path: "/mentor/tasks", icon: "/images/logbook.png", iconOren: "/images/logbookOren.png", label: "Manajemen Tugas" },
     { id: "mentor-logbook", path: "/mentor/logbook-review", icon: "/images/logbook.png", iconOren: "/images/logbookOren.png", label: "Review Logbook" },
     { id: "mentor-permission", path: "/mentor/permission-review", icon: "/images/permission.png", iconOren: "/images/perizinanOren.png", label: "Review Perizinan" },
   ];
 
   const adminMenuItems = [
     { id: "admin-dashboard", path: "/admin/dashboard", icon: "/images/dashboard.png", iconOren: "/images/dashboardOren.png", label: "Dashboard" },
+    { id: "admin-announcements", path: "/admin/announcements", icon: "/images/dashboard.png", iconOren: "/images/dashboardOren.png", label: "Pengumuman" },
     { id: "admin-users", path: "/admin/users", icon: "/images/profile.png", iconOren: "/images/profile.png", label: "Manajemen User" },
-    { id: "admin-permissions", path: "/admin/permissions", icon: "/images/permission.png", iconOren: "/images/perizinanOren.png", label: "Manajemen Izin" },
     { id: "admin-internships", path: "/admin/internships", icon: "/images/logbook.png", iconOren: "/images/logbookOren.png", label: "Monitoring Internship" },
+    { id: "admin-attendance", path: "/admin/attendance", icon: "/images/absen.png", iconOren: "/images/absensiOren.png", label: "Monitoring Absensi" },
+    { id: "admin-reports", path: "/admin/reports", icon: "/images/peraturan.png", iconOren: "/images/peraturanOren.png", label: "Laporan & Ekspor" },
   ];
 
   const menuItems = user.role === 'mentor'

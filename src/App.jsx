@@ -15,6 +15,7 @@ import Dashboard from "./features/intern/pages/Dashboard";
 import Perizinan from "./features/intern/pages/Permission";
 import Presensi from "./features/intern/pages/Presensi";
 import Logbook from "./features/intern/pages/Logbook";
+import Tasks from "./features/intern/pages/Tasks";
 import Peraturan from "./features/intern/pages/Peraturan";
 
 // Shared Pages
@@ -24,12 +25,17 @@ import Profile from "./features/shared/pages/Profile";
 import MentorDashboard from "./features/mentor/pages/Dashboard";
 import MentorLogbookReview from "./features/mentor/pages/LogbookReview";
 import MentorPermissionReview from "./features/mentor/pages/PermissionReview";
+import MentorTaskManager from "./features/mentor/pages/TaskManager";
 
 // Admin Pages
 import AdminDashboard from "./features/admin/Dashboard";
 import UserManagement from "./features/admin/UserManagement";
 import PermissionManagement from "./features/admin/PermissionManagement";
 import InternshipMonitoring from "./features/admin/InternshipMonitoring";
+import AnnouncementManagement from "./features/admin/AnnouncementManagement";
+import AuditLogs from "./features/admin/AuditLogs";
+import AttendanceMonitoring from "./features/admin/AttendanceMonitoring";
+import Reporting from "./features/admin/Reporting";
 
 
 // Protected Route
@@ -41,7 +47,6 @@ const ProtectedRoute = ({ children }) => {
 // Main Layout
 const MainLayout = ({ children, activeTab, setActiveTab }) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const path = window.location.pathname;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -92,6 +97,17 @@ function App() {
             <ProtectedRoute>
               <MainLayout activeTab="logbook" setActiveTab={setActiveTab}>
                 <Logbook />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="tasks" setActiveTab={setActiveTab}>
+                <Tasks />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -154,6 +170,17 @@ function App() {
         />
 
         <Route
+          path="/mentor/tasks"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="mentor-tasks" setActiveTab={setActiveTab}>
+                <MentorTaskManager />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/mentor/logbook-review"
           element={
             <ProtectedRoute>
@@ -197,21 +224,41 @@ function App() {
           }
         />
         <Route
-          path="/admin/permissions"
-          element={
-            <ProtectedRoute>
-              <MainLayout activeTab="admin-permissions" setActiveTab={setActiveTab}>
-                <PermissionManagement />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/admin/internships"
           element={
             <ProtectedRoute>
               <MainLayout activeTab="admin-internships" setActiveTab={setActiveTab}>
                 <InternshipMonitoring />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/announcements"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-announcements" setActiveTab={setActiveTab}>
+                <AnnouncementManagement />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/attendance"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-attendance" setActiveTab={setActiveTab}>
+                <AttendanceMonitoring />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute>
+              <MainLayout activeTab="admin-reports" setActiveTab={setActiveTab}>
+                <Reporting />
               </MainLayout>
             </ProtectedRoute>
           }

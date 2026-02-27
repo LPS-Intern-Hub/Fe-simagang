@@ -111,6 +111,17 @@ export const reviewLogbook = (id, action, rejection_reason = null) =>
 export const reviewPermission = (id, action, rejection_reason = null) =>
   api.put(`/permissions/${id}/review`, { action, rejection_reason });
 
+// --- ANNOUNCEMENT APIs ---
+export const getAnnouncements = (params) => api.get('/announcements', { params });
+
+// --- TASK APIs ---
+export const getTasks = (params) => api.get('/tasks', { params });
+export const createTask = (data) => api.post('/tasks', data);
+export const updateTask = (id, data) => api.put(`/tasks/${id}`, data);
+export const updateTaskStatus = (id, status) => api.patch(`/tasks/${id}/status`, { status });
+export const deleteTask = (id) => api.delete(`/tasks/${id}`);
+
+
 // --- ADMIN APIs ---
 export const getAdminDashboard = () => api.get('/dashboard/admin');
 export const getAllUsers = (params) => api.get('/users', { params });

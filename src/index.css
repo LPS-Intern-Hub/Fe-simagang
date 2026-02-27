@@ -1,5 +1,4 @@
 /* src/index.css */
-
 :root {
     /* Colors */
     --primary: #FF6B00;
@@ -76,6 +75,7 @@ aside {
 }
 
 @media (max-width: 576px) {
+
     /* ── Mobile Top Bar ── */
     .mobile-topbar {
         display: flex;
@@ -170,7 +170,7 @@ aside {
         border-right: none;
         box-shadow: none;
         transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -252,7 +252,7 @@ aside {
         overflow-x: hidden;
     }
 
-    main > div {
+    main>div {
         padding: 16px !important;
         padding-top: 72px !important;
         overflow-x: hidden;
@@ -1625,12 +1625,12 @@ header {
         font-size: 20px !important;
     }
 
-    .presensi-item-info > div:first-child {
+    .presensi-item-info>div:first-child {
         font-size: 13px !important;
         margin-bottom: 6px !important;
     }
 
-    .presensi-item-info > div:last-child {
+    .presensi-item-info>div:last-child {
         font-size: 11px !important;
         padding: 4px 8px !important;
     }
@@ -1713,7 +1713,7 @@ header {
         gap: 12px !important;
     }
 
-    .mentor-summary-grid > div {
+    .mentor-summary-grid>div {
         padding: 20px !important;
         border-radius: 16px !important;
     }
@@ -1773,7 +1773,7 @@ header {
         min-width: 0 !important;
     }
 
-    .mentor-perm-grid > div {
+    .mentor-perm-grid>div {
         min-width: 0 !important;
         overflow: hidden;
     }

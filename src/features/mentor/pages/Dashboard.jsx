@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getDashboard, getLogbooks, getPermissions, getMentorInternships } from '../../../services/api';
+import { getDashboard, getLogbooks, getPermissions, getMentorInternships, getAnnouncements } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
 
 const MentorDashboard = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
+    const [announcements, setAnnouncements] = useState([]);
     const [stats, setStats] = useState({
         totalInterns: 0,
         pendingLogbooks: 0,
@@ -34,10 +35,18 @@ const MentorDashboard = () => {
         try {
             setLoading(true);
 
-            // Get user data
-            const dashboardResponse = await getDashboard();
+            // Get user data and announcements
+            const [dashboardResponse, announcementResponse] = await Promise.all([
+                getDashboard(),
+                getAnnouncements({ role: 'mentor' })
+            ]);
+
             if (dashboardResponse.data.success) {
                 setUserData(dashboardResponse.data.data.user);
+            }
+
+            if (announcementResponse.data.success) {
+                setAnnouncements(announcementResponse.data.data);
             }
 
             // Get pending logbooks (status: sent - LogbookStatus enum)
@@ -356,6 +365,61 @@ const MentorDashboard = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Announcements Section */}
+            <div style={{ marginTop: '30px' }}>
+                <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '20px',
+                    color: '#1F2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}>
+                    <i className="ri-notification-3-line" style={{ color: '#FF6B00' }}></i>
+                    Pengumuman Pusat
+                </h3>
+
+                {announcements.length === 0 ? (
+                    <div style={{
+                        background: 'white',
+                        padding: '30px',
+                        borderRadius: '20px',
+                        textAlign: 'center',
+                        color: '#9CA3AF',
+                        border: '2px dashed #E5E7EB'
+                    }}>
+                        <i className="ri-chat-history-line" style={{ fontSize: '32px', marginBottom: '10px', display: 'block' }}></i>
+                        Belum ada pengumuman terbaru.
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gap: '15px' }}>
+                        {announcements.map((item) => (
+                            <div key={item.id_announcements} style={{
+                                background: 'white',
+                                padding: '25px',
+                                borderRadius: '20px',
+                                border: '1px solid #F3F4F6',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+                                borderLeft: '5px solid #3B82F6'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                    <h4 style={{ margin: 0, fontWeight: '800', fontSize: '16px', color: '#111827' }}>{item.title}</h4>
+                                    <span style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: '500' }}>{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '14px', color: '#4B5563', lineHeight: '1.7' }}>{item.content}</p>
+                                <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: '#6B7280' }}>
+                                        {item.author?.full_name?.charAt(0)}
+                                    </div>
+                                    <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>Admin: {item.author?.full_name}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
